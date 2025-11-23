@@ -1,0 +1,287 @@
+"use client";
+
+import { useRef, useEffect, useState } from "react";
+import { styled } from '@mui/material/styles';
+import { krona, tomorrow } from "../app/fonts";
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import { List, RowComponentProps } from 'react-window';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { createPortfolio, getPortfolios, createStockList, getStockLists } from '../api/api';
+import { useRouter } from "next/navigation";
+
+interface Portfolio {
+	port_id: number;
+	user_id: number;
+	cash_amt: number;
+}
+
+interface StockList {
+	sl_id: number;
+	user_id: number;
+	visibility: string;
+}
+
+const DialogField = styled(TextField)(({ theme }) => ({
+  width: "500px",
+  "& .MuiInputBase-input": {
+    color: "#8FCAFA",
+    fontFamily: tomorrow.style.fontFamily,
+  },
+  "& .MuiInputLabel-root": {
+    color: "#8FCAFA",
+    fontFamily: tomorrow.style.fontFamily,
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: "#8FCAFA"
+  },
+  "& .MuiOutlinedInput-root fieldset": { borderColor: "#8FCAFA" },
+  "& .MuiOutlinedInput-root:hover fieldset": { borderColor: "#8FCAFA" },
+  "& .MuiOutlinedInput-root.Mui-focused fieldset": { borderColor: "#8FCAFA" }
+}));
+
+const Title = styled(Typography)(({ theme }) => ({
+  ...theme.typography.h3,
+  color: '#2798F5',
+  fontFamily: krona.style.fontFamily,
+}));
+
+const Subtitle = styled(Typography)(({ theme }) => ({
+  ...theme.typography.h5,
+  color: '#2798F5',
+  fontFamily: krona.style.fontFamily,
+}));
+
+function Home() {
+
+	const logout = function() {
+		localStorage.clear();
+		router.push("/");
+	}
+
+	const handleOpenPort = function() {
+		setOpenPort(true);
+	}
+
+	const handleClosePort = function() {
+		setOpenPort(false);
+	}
+
+	const handleOpenSL = function() {
+		setOpenSL(true);
+	}
+
+	const handleCloseSL = function() {
+		setOpenSL(false);
+	}
+
+	const handleSubmitPort = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const cash_amt = Number(cashAmtRef.current?.value) || 0;
+    handlePortfolio(cash_amt);
+    handleClosePort();
+  };
+
+  const handleSubmitSL = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    handleStockList(visibility);
+    handleCloseSL();
+  };
+
+  const handleVisibility = (newVisibility: string) => {
+    setVisibility(newVisibility);
+};
+
+	const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+	const [stockLists, setStockLists] = useState<StockList[]>([]);
+	const [portTotal, setPortTotal] = useState<number>(0);
+	const [slTotal, setSLTotal] = useState<number>(0);
+	const [openPort, setOpenPort] = useState(false);
+	const [openSL, setOpenSL] = useState(false);
+	const [visibility, setVisibility] = useState<string>('private');
+	const cashAmtRef = useRef<HTMLInputElement>(null)
+	const router = useRouter();
+
+	const handlePortfolio = async function (cash_amt: number) {
+		const user_id = localStorage.getItem("user_id");
+		let port_id = await createPortfolio(0, user_id, cash_amt);
+		if (port_id) {
+			localStorage.setItem("port_id", port_id);
+		}
+	}
+
+	const handleStockList = async function (visibility: string) {
+		const user_id = localStorage.getItem("user_id");
+		let sl_id = await createStockList(0, user_id, visibility);
+		if (sl_id) {
+			localStorage.setItem("sl_id", sl_id);
+		}
+	}
+
+	function PortRow({ index, portfolios, style }: RowComponentProps<{ portfolios: Portfolio[] }>) {
+	  const port = portfolios[index];
+	  const text = index+1 + ". Cash Amount: " + port.cash_amt;
+	  return (
+	    <ListItem style={style} key={index} component="div" disablePadding>
+	      <ListItemButton>
+	        <ListItemText primary={text} />
+	      </ListItemButton>
+	    </ListItem>
+	  );
+	}
+
+	function SLRow({ index, stockLists, style }: RowComponentProps<{ stockLists: StockList[] }>) {
+	  const sl = stockLists[index];
+	  const text = index+1 + ". Visibility: " + sl.visibility;
+	  return (
+	    <ListItem style={style} key={index} component="div" disablePadding>
+	      <ListItemButton>
+	        <ListItemText primary={text} />
+	      </ListItemButton>
+	    </ListItem>
+	  );
+	}
+
+
+	  useEffect(function () {
+	    async function load() {
+	    	const user_id = localStorage.getItem("user_id");
+	      const result = await getPortfolios(user_id);
+	      setPortfolios(result);
+	      setPortTotal(result.length);
+	      const slResult = await getStockLists(user_id);
+	      console.log(slResult);
+	      setStockLists(slResult);
+	      setSLTotal(slResult.length);
+	    }
+	    load();
+	  }, []);
+
+	const portHeight = Math.min(portTotal * 46, 368);
+	const slHeight = Math.min(slTotal * 46, 368);
+
+	return (
+		<div style={{ backgroundColor: "#8FCAFA" }}>
+			<Dialog 
+				open={openSL} 
+				onClose={handleCloseSL}
+				PaperProps={{
+          sx: {
+            backgroundColor: "#2798F5",
+            color: "#8FCAFA",
+            fontFamily: tomorrow.style.fontFamily,
+          },
+        }}
+			>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Portfolio</DialogTitle>
+        <form onSubmit={handleSubmitSL}>
+        <DialogContent>
+          <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
+          	Select your stock list's visibility
+          </DialogContentText>
+            <ButtonGroup variant="contained">
+						  <Button onClick={() => handleVisibility("private")}>private</Button>
+						  <Button onClick={() => handleVisibility("restricted")}>restricted</Button>
+						  <Button onClick={() => handleVisibility("public")}>public</Button>
+						</ButtonGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleCloseSL}>Cancel</Button>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} type="submit">Submit</Button>
+        </DialogActions>
+        </form>
+      </Dialog>
+			<Dialog 
+				open={openPort} 
+				onClose={handleClosePort}
+				PaperProps={{
+          sx: {
+            backgroundColor: "#2798F5",
+            color: "#8FCAFA",
+            fontFamily: tomorrow.style.fontFamily,
+          },
+        }}
+			>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Portfolio</DialogTitle>
+        <form onSubmit={handleSubmitPort}>
+        <DialogContent>
+          <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
+          	How much cash would you like to insert into this portfolio?
+          </DialogContentText>
+            <DialogField
+              required
+              margin="dense"
+              label="Cash Amount"
+              variant="standard"
+              fullWidth
+              inputRef={cashAmtRef}
+            />
+        </DialogContent>
+        <DialogActions>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleClosePort}>Cancel</Button>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} type="submit">Submit</Button>
+        </DialogActions>
+        </form>
+      </Dialog>
+		<Grid 
+      container 
+      spacing={3}
+      justifyContent="center"
+      alignItems="center"
+      sx={{ height: '100vh' }}
+    >
+			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio Manager"}</Title></Grid>
+			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Portfolios"}</Subtitle></Grid>
+			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Stock Lists"}</Subtitle></Grid>
+			<Grid size={6} display="flex" justifyContent="center">
+				<Box sx={{ width: "100%", height: portHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+		      <List
+		        rowHeight={46}
+		        rowCount={portTotal}
+		        style={{ portHeight, width: 360 }}
+		        rowProps={{ portfolios }}
+		        overscanCount={5}
+		        rowComponent={PortRow}
+		      />
+		    </Box>
+		   </Grid>
+		  <Grid size={6} display="flex" justifyContent="center">
+		  	<Box sx={{ width: "100%", height: slHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+		      <List
+		        rowHeight={46}
+		        rowCount={slTotal}
+		        style={{ slHeight, width: 360 }}
+		        rowProps={{ stockLists }}
+		        overscanCount={5}
+		        rowComponent={SLRow}
+		      />
+		    </Box>
+		  </Grid>
+			<Grid size={6} display="flex" justifyContent="center"><Button onClick={handleOpenPort} sx={{ color: "#2798F5" }}>{"Add Portfolio"}</Button></Grid>
+			<Grid size={6} display="flex" justifyContent="center"><Button onClick={handleOpenSL} sx={{ color: "#2798F5" }}>{"Add Stock List"}</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center">
+				
+		   </Grid>
+		   <Grid size={12} display="flex" justifyContent="center">
+        <Button sx={{ color: "#2798F5" }} onClick={logout}>Log Out</Button>
+       </Grid>
+  	</Grid>
+    </div>
+	);
+}
+
+export default Home;
