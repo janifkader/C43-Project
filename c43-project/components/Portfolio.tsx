@@ -42,6 +42,11 @@ interface Portfolio {
 
 function Portfolio() {
 	const [portfolio, setPortfolio] = useState<Portfolio[]>([]);
+	const router = useRouter();
+
+	const handleHome = function () {
+		router.push('/home');
+	}
 
 	useEffect(() => {
 		const fetchPort = async function () {
@@ -62,6 +67,7 @@ function Portfolio() {
 		    >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio"}</Title></Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Cash Amount: " + portfolio.cash_amt}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleHome}>← Home</Button></Grid>
 			</Grid>
 		</div>
 	
