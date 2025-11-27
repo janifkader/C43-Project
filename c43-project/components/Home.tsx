@@ -71,6 +71,16 @@ function Home() {
 		router.push("/");
 	}
 
+	const handlePortfolioPage = function(port_id: Portfolio) {
+		localStorage.setItem("port_id", port_id);
+		router.push("/portfolio");
+	}
+
+	const handleSLPage = function(sl_id: StockList) {
+		localStorage.setItem("sl_id", sl_id);
+		router.push("/stocklist");
+	}
+
 	const handleOpenPort = function() {
 		setOpenPort(true);
 	}
@@ -137,7 +147,7 @@ function Home() {
 	  const text = index+1 + ". Cash Amount: " + port.cash_amt;
 	  return (
 	    <ListItem style={style} key={index} component="div" disablePadding>
-	      <ListItemButton>
+	      <ListItemButton onClick={() => handlePortfolioPage(port.port_id)}>
 	        <ListItemText primary={text} />
 	      </ListItemButton>
 	    </ListItem>
@@ -149,7 +159,7 @@ function Home() {
 	  const text = index+1 + ". Visibility: " + sl.visibility;
 	  return (
 	    <ListItem style={style} key={index} component="div" disablePadding>
-	      <ListItemButton>
+	      <ListItemButton onClick={() => handleSLPage(sl.sl_id)}>
 	        <ListItemText primary={text} />
 	      </ListItemButton>
 	    </ListItem>
@@ -187,7 +197,7 @@ function Home() {
           },
         }}
 			>
-        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Portfolio</DialogTitle>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Stock List</DialogTitle>
         <form onSubmit={handleSubmitSL}>
         <DialogContent>
           <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>

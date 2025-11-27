@@ -24,4 +24,8 @@ public class PortfolioService {
 	public List<Portfolio> getPortfolios(int user_id) {
 		return repo.getPortfolios(user_id);
 	}
+	
+	public Portfolio getPortfolio(int port_id) {
+		return repo.getPortfolio(port_id);
+	}
 }
