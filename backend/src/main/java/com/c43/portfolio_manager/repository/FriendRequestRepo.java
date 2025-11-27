@@ -14,22 +14,30 @@ import com.c43.portfolio_manager.model.FriendRequest;
 public class FriendRequestRepo {
 	public int createFriendRequest(int sender_id, int receiver_id, String status, Date last_updated) {
 	    String sql = "INSERT INTO FriendRequest (sender_id, receiver_id, status, last_updated) VALUES (?, ?. ?, ?) RETURNING request_id;";
-
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
 	    try {
-	    	Connection conn = Database.getConnection(); 
-	    	PreparedStatement pstmt = conn.prepareStatement(sql);
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
 	        pstmt.setInt(1, sender_id);
 	        pstmt.setInt(2, receiver_id);
 	        pstmt.setString(3, status);
 	        pstmt.setDate(4, last_updated);
 
-	        ResultSet rs = pstmt.executeQuery();
+	        rs = pstmt.executeQuery();
 
 	        if (rs.next()) {
 	            return rs.getInt("request_id");
 	        }
-	    } catch (SQLException e) {
+	    } 
+	    catch (SQLException e) {
 	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
 	    }
 
 	    return -1;
@@ -37,13 +45,15 @@ public class FriendRequestRepo {
 	public List<FriendRequest> getFriendRequests(int user_id) {
 	    String sql = "SELECT request_id FROM FriendRequest WHERE sender_id = ? OR receiver_id = ?;";
 	    List<FriendRequest> requests = new ArrayList<>();
-
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
 	    try {
-	    	Connection conn = Database.getConnection(); 
-	    	PreparedStatement pstmt = conn.prepareStatement(sql);
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
 	        pstmt.setInt(1, user_id);
 
-	        ResultSet rs = pstmt.executeQuery();
+	        rs = pstmt.executeQuery();
 
 	        while (rs.next()) {
 	        	int request_id = rs.getInt("request_id");
@@ -56,6 +66,11 @@ public class FriendRequestRepo {
 	    } 
 	    catch (SQLException e) {
 	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
 	    }
 
 	    return requests;

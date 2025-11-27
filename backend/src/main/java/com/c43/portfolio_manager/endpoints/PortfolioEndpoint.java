@@ -13,6 +13,7 @@ public class PortfolioEndpoint {
 	private final PortfolioService service;
 	
 	public PortfolioEndpoint(PortfolioService service) {
+		System.out.println("FUCK MED ADDYA");
 		this.service = service;
 	}
 	
@@ -24,5 +25,10 @@ public class PortfolioEndpoint {
 	@GetMapping("/")
 	public List<Portfolio> get(@RequestParam int user_id){
 		return service.getPortfolios(user_id);
+	}
+	
+	@GetMapping("/portfolio/")
+	public Portfolio getOne(@RequestParam int port_id) {
+		return service.getPortfolio(port_id);
 	}
 }

@@ -9,13 +9,16 @@ import com.c43.portfolio_manager.Database;
 public class UserRepo {
 	public int createUser(String username, String password) {
 	    String sql = "INSERT INTO Users (username, password) VALUES (?, ?) RETURNING user_id;";
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
 	    try {
-	    	Connection conn = Database.getConnection(); 
-	    	PreparedStatement pstmt = conn.prepareStatement(sql);
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
 	        pstmt.setString(1, username);
 	        pstmt.setString(2, password);
 
-	        ResultSet rs = pstmt.executeQuery();
+	        rs = pstmt.executeQuery();
 
 	        if (rs.next()) {
 	            return rs.getInt("user_id");
@@ -24,20 +27,27 @@ public class UserRepo {
 	    catch (SQLException e) {
 	        e.printStackTrace();
 	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
 
 	    return -1;
 	}
 	
 	public int getUser(String username, String password) {
 		String sql = "SELECT user_id FROM Users WHERE username = ? AND password = ?";
-		
+		Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
 		try {
-			Connection conn = Database.getConnection(); 
-			PreparedStatement pstmt = conn.prepareStatement(sql);
+			conn = Database.getConnection(); 
+			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, username);
 			pstmt.setString(2, password);
 			
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			
 			if (rs.next()) {
 				return rs.getInt("user_id");
@@ -46,6 +56,11 @@ public class UserRepo {
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
+		finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
 		return -1;
 	}
 }

@@ -16,18 +16,38 @@ export function signin(username: string, password: string) {
     return send("POST", `/signin`, {username, password});
 }
 
-export function createPortfolio(port_id: int, user_id: int, cash_amt: double) {
+export function createPortfolio(port_id: number, user_id: number, cash_amt: number) {
     return send("POST", `/portfolios/`, {port_id, user_id, cash_amt});
 }
 
-export function getPortfolios(user_id: int) {
+export function getPortfolios(user_id: number) {
     return send("GET", `/portfolios/?user_id=${user_id}`);
 }
 
-export function createStockList(sl_id: int, user_id: int, visibility: string) {
+export function getPortfolio(port_id: number) {
+    return send("GET", `/portfolios/portfolio/?port_id=${port_id}`);
+}
+
+export function createStockList(sl_id: number, user_id: number, visibility: string) {
     return send("POST", `/stocklist/`, {sl_id, user_id, visibility});
 }
 
-export function getStockLists(user_id: int) {
+export function getStockLists(user_id: number) {
     return send("GET", `/stocklist/?user_id=${user_id}`);
+}
+
+export function getStockList(sl_id: number) {
+    return send("GET", `/stocklist/sl/?sl_id=${sl_id}`);
+}
+
+export function insertStock(sl_id: number, symbol: string, num_of_shares: number) {
+    return send("POST", `/stocklist/contains/`, {sl_id, symbol, num_of_shares});
+}
+
+export function getStockListStocks(sl_id: number) {
+    return send("GET", `/stocklist/contains/?sl_id=${sl_id}`);
+}
+
+export function getStocks(search: string) {
+    return send("GET", `/stocks/?search=${search}`, null);
 }

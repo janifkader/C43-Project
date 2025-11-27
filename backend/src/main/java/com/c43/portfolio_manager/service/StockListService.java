@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.c43.portfolio_manager.model.StockList;
+import com.c43.portfolio_manager.model.Stock;
 import com.c43.portfolio_manager.repository.StockListRepo;
 
 @Service
@@ -23,5 +24,17 @@ public class StockListService {
 	
 	public List<StockList> getStockLists(int user_id) {
 		return repo.getStockLists(user_id);
+	}
+	
+	public StockList getStockList(int sl_id) {
+		return repo.getStockList(sl_id);
+	}
+	
+	public List<Stock> getStockListStocks(int sl_id) {
+		return repo.getStockListStocks(sl_id);
+	}
+	
+	public int insertStock(int sl_id, String symbol, int num_of_shares) {
+		return repo.insertStock(sl_id, symbol, num_of_shares);
 	}
 }
