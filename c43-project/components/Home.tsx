@@ -129,17 +129,15 @@ function Home() {
 	const handlePortfolio = async function (cash_amt: number) {
 		const user_id = localStorage.getItem("user_id");
 		let port_id = await createPortfolio(0, user_id, cash_amt);
-		if (port_id) {
-			localStorage.setItem("port_id", port_id);
-		}
+		const refreshPorts = await getPortfolios(user_id);
+		setPortfolios(refreshPorts);
 	}
 
 	const handleStockList = async function (visibility: string) {
 		const user_id = localStorage.getItem("user_id");
 		let sl_id = await createStockList(0, user_id, visibility);
-		if (sl_id) {
-			localStorage.setItem("sl_id", sl_id);
-		}
+		const refreshSls = await getStockLists(user_id);
+		setStockLists(refreshSls);
 	}
 
 	function PortRow({ index, portfolios, style }: RowComponentProps<{ portfolios: Portfolio[] }>) {

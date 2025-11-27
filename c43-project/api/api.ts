@@ -1,5 +1,5 @@
 function send(method: string, url: string, data?: unknown){
-    return fetch(`${process.env.NEXT_PUBLIC_BACKEND}${url}`, {
+    return fetch(`http://localhost:8080${url}`, {
         method: method,
         headers: {"Content-Type": "application/json"},
         body: (data)? JSON.stringify(data): null,

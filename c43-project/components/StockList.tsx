@@ -81,6 +81,11 @@ function StockList() {
 	const [dialogSymbol, setDialogSymbol] = useState<string>('');
 	const searchRef = useRef<HTMLInputElement>(null);
 	const sharesRef = useRef<HTMLInputElement>(null);
+	const router = useRouter();
+
+	const handleHome = function () {
+		router.push('/home');
+	}
 
 	const handleInsertDialog = function(symbol: string) {
 		setDialogSymbol(symbol);
@@ -134,7 +139,12 @@ function StockList() {
 	  const text = s.symbol + ": " + s.num_of_shares + " shares";
 	  return (
 	    <ListItem style={style} key={index} component="div" disablePadding>
-	       <ListItemText primary={text} />
+	       <ListItemText primary={text} primaryTypographyProps={{ 
+				    sx: { 
+				      fontFamily: krona.style.fontFamily, 
+				      textAlign: 'center',
+				    } 
+				  }} />
 	    </ListItem>
 	  );
 	}
@@ -143,8 +153,7 @@ function StockList() {
 	  const text = allStocks[index];
 	  return (
 	    <ListItem style={style} key={index} component="div" disablePadding>
-	      <ListItemButton onClick={() => handleInsertDialog(text)}
-	      >
+	      <ListItemButton onClick={() => handleInsertDialog(text)}>
 	        <ListItemText primary={text} />
 	      </ListItemButton>
 	    </ListItem>
@@ -191,7 +200,7 @@ function StockList() {
         <form onSubmit={handleInsertSubmit}>
         <DialogContent>
           <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
-          	How many shares would you like to add.
+          	{"How many shares of " + dialogSymbol + " would you like to add."}
           </DialogContentText>
             <DialogField
               required
@@ -251,7 +260,7 @@ function StockList() {
          <IconButton onClick={handleOpenSearch} ><SearchIcon sx={{ color: "#2798F5", fontSize: 30 }}/></IconButton>
       </Grid>
 			<Grid size={6} display="flex" justifyContent="center">
-		  	<Box sx={{ width: "100%", height: slHeight, maxWidth: 360, bgcolor: "8FCAFA", color: "#2798F5" }}>
+		  	<Box sx={{ width: "100%", height: slHeight, maxWidth: 360, bgcolor: "#8FCAFA", color: "#2798F5" }}>
 		      <List
 		        rowHeight={46}
 		        rowCount={stockTotal}
@@ -263,7 +272,7 @@ function StockList() {
 		    </Box>
 		  </Grid>
 		  <Grid size={6} display="flex" justifyContent="center">
-		  	<Box sx={{ width: "100%", height: stockHeight, maxWidth: 360, bgcolor: "8FCAFA", color: "#2798F5" }}>
+		  	<Box sx={{ width: "100%", height: stockHeight, maxWidth: 360, bgcolor: "#8FCAFA", color: "#2798F5" }}>
 		      <List
 		        rowHeight={46}
 		        rowCount={allStocksTotal}
@@ -275,6 +284,7 @@ function StockList() {
 		    </Box>
 		  </Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist.visibility}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleHome}>← Home</Button></Grid>
 			</Grid>
 		</div>
 	
