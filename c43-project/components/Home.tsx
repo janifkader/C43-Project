@@ -131,6 +131,7 @@ function Home() {
 		let port_id = await createPortfolio(0, user_id, cash_amt);
 		const refreshPorts = await getPortfolios(user_id);
 		setPortfolios(refreshPorts);
+		setPortTotal(refreshPorts.length);
 	}
 
 	const handleStockList = async function (visibility: string) {
@@ -138,6 +139,7 @@ function Home() {
 		let sl_id = await createStockList(0, user_id, visibility);
 		const refreshSls = await getStockLists(user_id);
 		setStockLists(refreshSls);
+		setSLTotal(refreshSls.length);
 	}
 
 	function PortRow({ index, portfolios, style }: RowComponentProps<{ portfolios: Portfolio[] }>) {
