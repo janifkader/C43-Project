@@ -24,4 +24,12 @@ public class UserService {
         return repo.getUser(username, password);
     }
 	
+	public String getUserByID(int user_id) {
+		return repo.getUserbyID(user_id);
+	}
+	
+	public List<User> getUsers() {
+		return repo.getUsers();
+	}
+	
 }

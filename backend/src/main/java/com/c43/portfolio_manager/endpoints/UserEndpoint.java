@@ -16,13 +16,23 @@ public class UserEndpoint {
         this.service = service;
     }
     
-    @PostMapping("/signup")
+    @PostMapping("/signup/")
     public int create(@RequestBody User user) {
         return service.createUser(user.username, user.password);
     }
     
-    @PostMapping("/signin")
+    @PostMapping("/signin/")
     public int get(@RequestBody User user) {
         return service.getUser(user.username, user.password);
+    }
+    
+    @GetMapping("/users/")
+    public List<User> getUsers() {
+    	return service.getUsers();
+    }
+    
+    @GetMapping("/user/")
+    public String getUser(@RequestParam int user_id) {
+    	return service.getUserByID(user_id);
     }
 }

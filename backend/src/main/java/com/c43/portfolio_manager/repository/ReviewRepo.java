@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.c43.portfolio_manager.Database;
-import com.c43.portfolio_manager.model.Review;
+import com.c43.portfolio_manager.model.ReviewText;
 
 public class ReviewRepo {
 	
@@ -42,9 +42,9 @@ public class ReviewRepo {
 	    return -1;
 	}
 	
-	public List<Review> getReviews(int sl_id) {
+	public List<ReviewText> getReviews(int sl_id) {
 	    String sql = "SELECT u.username, r.text FROM Review r JOIN Users u ON r.user_id = u.user_id WHERE r.sl_id = ?;";
-	    List<Review> reviews = new ArrayList<>();
+	    List<ReviewText> reviews = new ArrayList<>();
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
 	    ResultSet rs = null;
@@ -56,10 +56,9 @@ public class ReviewRepo {
 	        rs = pstmt.executeQuery();
 
 	        while (rs.next()) {
-	        	int review_id = rs.getInt("review_id");
-	        	int user_id = rs.getInt("user_id");
-	            String text = rs.getString("text");
-	            reviews.add(new Review(review_id, user_id, sl_id, text));
+	        	String username = rs.getString("username");
+	        	String text = rs.getString("text");
+	            reviews.add(new ReviewText(username, text));
 	        }
 	    } 
 	    catch (SQLException e) {

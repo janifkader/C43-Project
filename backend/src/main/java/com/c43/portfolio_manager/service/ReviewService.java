@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.c43.portfolio_manager.model.Review;
+import com.c43.portfolio_manager.model.ReviewText;
 import com.c43.portfolio_manager.repository.ReviewRepo;
 
 @Service
@@ -21,7 +21,7 @@ public class ReviewService {
 		return repo.createReview(user_id, sl_id, text);
 	}
 	
-	public List<Review> getReviews(int sl_id) {
+	public List<ReviewText> getReviews(int sl_id) {
 		return repo.getReviews(sl_id);
 	}
 }

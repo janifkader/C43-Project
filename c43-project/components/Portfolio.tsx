@@ -21,7 +21,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { getPortfolio, getStocks, getPortfolioStocks, insertPortfolioStock, getPrice } from '../api/api';
+import { getPortfolio, getStocks, getPortfolioStocks, insertPortfolioStock, getPrice, updatePortfolio, addTransaction } from '../api/api';
 import { useRouter } from "next/navigation";
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -80,9 +80,32 @@ function Portfolio() {
 	const [allStocksTotal, setAllStocksTotal] = useState(0);
 	const [insertDialog, setInsertDialog] = useState(false);
 	const [dialogSymbol, setDialogSymbol] = useState<string>('');
+	const [open, setOpen] = useState(false);
 	const searchRef = useRef<HTMLInputElement>(null);
 	const sharesRef = useRef<HTMLInputElement>(null);
+	const cashAmtRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
+
+	const handleClose = function () {
+		setOpen(false);
+	}
+
+	const handleOpen = function () {
+		setOpen(true);
+	}
+
+	const handleSubmit = function (e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const cash = cashAmtRef.current?.value || 0;
+    addCash(cash);
+    handleClose();
+	}
+
+	const addCash = async function (cash: number) {
+		portfolio.cash_amt = Number(portfolio.cash_amt) + Number(cash);
+		await updatePortfolio(portfolio.port_id, portfolio.user_id, portfolio.cash_amt);
+	}
 
 	const handleHome = function () {
 		router.push('/home');
@@ -133,7 +156,10 @@ function Portfolio() {
   	if (price*num_of_shares < portfolio.cash_amt) {
 	  	const insert = await insertPortfolioStock(portfolio.port_id, symbol, num_of_shares);
 	  	const refresh = await getPortfolioStocks(portfolio.port_id);
-	  	portfolio.cash_amt = portfolio.cash_amt - price*num_of_shares;
+	  	const diff = portfolio.cash_amt - price*num_of_shares;
+	  	portfolio.cash_amt = Number(diff.toFixed(2))
+	  	await updatePortfolio(portfolio.port_id, portfolio.user_id, portfolio.cash_amt);
+	  	await addTransaction(0, symbol, portfolio.port_id, "buy", num_of_shares, price, new Date());
 	  	setStocks(refresh);
 	  	setStockTotal(refresh.length);
 	  }
@@ -188,6 +214,38 @@ function Portfolio() {
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>
+			<Dialog 
+				open={open} 
+				onClose={handleClose}
+				PaperProps={{
+          sx: {
+            backgroundColor: "#2798F5",
+            color: "#8FCAFA",
+            fontFamily: tomorrow.style.fontFamily,
+          },
+        }}
+			>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Portfolio</DialogTitle>
+        <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
+          	How much cash would you like to insert into this portfolio?
+          </DialogContentText>
+            <DialogField
+              required
+              margin="dense"
+              label="Cash Amount"
+              variant="standard"
+              fullWidth
+              inputRef={cashAmtRef}
+            />
+        </DialogContent>
+        <DialogActions>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleClose}>Cancel</Button>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} type="submit">Submit</Button>
+        </DialogActions>
+        </form>
+      </Dialog>
 			<Dialog 
 				open={insertDialog} 
 				onClose={handleCloseInsert}
@@ -257,7 +315,7 @@ function Portfolio() {
 		      sx={{ height: '100vh' }}
 		    >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio"}</Title></Grid>
-			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Cash Amount: $" + portfolio.cash_amt}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center" sx={{ gap: 4 }}><Subtitle>{"Cash Amount: $" + portfolio.cash_amt}</Subtitle><Button onClick={handleOpen}>Add Cash</Button></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Current Holdings"}</Subtitle></Grid>
 			<Grid size={6} display="flex" justifyContent="center">
         <Subtitle>{"Add a Stock"}</Subtitle>
