@@ -34,7 +34,7 @@ public class StockListEndpoint {
 	
 	@PostMapping("/contains/")
 	public int insertStock(@RequestBody Stock stock ) {
-		return service.insertStock(stock.sl_id, stock.symbol, stock.num_of_shares);
+		return service.insertStock(stock.id, stock.symbol, stock.num_of_shares);
 	}
 	
 	@GetMapping("/contains/")

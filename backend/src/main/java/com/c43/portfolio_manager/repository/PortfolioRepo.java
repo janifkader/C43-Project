@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.c43.portfolio_manager.Database;
 import com.c43.portfolio_manager.model.Portfolio;
+import com.c43.portfolio_manager.model.Stock;
 
 public class PortfolioRepo {
 	public int createPortfolio(int user_id, double cash_amt) {
@@ -128,6 +129,96 @@ public class PortfolioRepo {
 	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
 	    }
 	    return null;
+	}
+	
+	public List<Stock> getStockHoldings(int port_id) {
+	    String sql = "SELECT symbol, num_of_shares FROM stock_holdings WHERE port_id = ?;";
+	    List<Stock> stocks = new ArrayList<>();
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, port_id);
+
+	        rs = pstmt.executeQuery();
+
+	        while (rs.next()) {
+	        	String symbol = rs.getString("symbol");
+	        	int num_of_shares = rs.getInt("num_of_shares");
+	            stocks.add(new Stock(port_id, symbol, num_of_shares));
+	        }
+	    } 
+	    catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
+
+	    return stocks;
+	}
+	
+	public int insertStock(int port_id, String symbol, int num_of_shares) {
+	    String sql = "INSERT INTO stock_holdings (port_id, symbol, num_of_shares) VALUES (?, ?, ?) RETURNING port_id;";
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, port_id);
+	        pstmt.setString(2, symbol);
+	        pstmt.setInt(3, num_of_shares);
+
+	        rs = pstmt.executeQuery();
+
+	        if (rs.next()) {
+	            return rs.getInt("port_id");
+	        }
+	    } 
+	    catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
+
+	    return -1;
+	}
+	
+	public int updatePortfolio(int port_id, double cash_amt) {
+	    String sql = "UPDATE Portfolio SET cash_amt = ? WHERE port_id = ? RETURNING port_id;";
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
+	        pstmt.setDouble(1, cash_amt);
+	        pstmt.setInt(2, port_id);
+
+	        rs = pstmt.executeQuery();
+
+	        if (rs.next()) {
+	            return rs.getInt("port_id");
+	        }
+	    } 
+	    catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
+
+	    return -1;
 	}
 	
 	/*public List<Portfolio> viewStockHoldings(Connection conn, int port_id) {

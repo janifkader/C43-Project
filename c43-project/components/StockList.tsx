@@ -21,7 +21,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { insertStock, getStockList, getStockListStocks, getStocks } from '../api/api';
+import { insertSLStock, getStockList, getStockListStocks, getStocks } from '../api/api';
 import { useRouter } from "next/navigation";
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -127,7 +127,7 @@ function StockList() {
   };
 
   const handleInsertStock = async function (symbol: string, num_of_shares: number) {
-  	const insert = await insertStock(stocklist.sl_id, symbol, num_of_shares);
+  	const insert = await insertSLStock(stocklist.sl_id, symbol, num_of_shares);
   	const refresh = await getStockListStocks(stocklist.sl_id);
   	setStocks(refresh);
   	setStockTotal(refresh.length);
@@ -180,8 +180,6 @@ function StockList() {
 
 	const slHeight = Math.min(stockTotal * 46, 368);
 	const stockHeight = Math.min(allStocksTotal * 46, 368);
-	console.log("POT: " + allStocksTotal*46);
-	console.log("AC HEIGHT: " + stockHeight)
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>

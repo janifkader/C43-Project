@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.c43.portfolio_manager.service.PortfolioService;
 import com.c43.portfolio_manager.model.Portfolio;
+import com.c43.portfolio_manager.model.Stock;
 
 @RestController
 @RequestMapping("/portfolios")
@@ -27,8 +28,23 @@ public class PortfolioEndpoint {
 		return service.getPortfolios(user_id);
 	}
 	
+	@PostMapping("/portfolio/")
+	public int update(@RequestBody Portfolio port) {
+		return service.updatePortfolio(port.port_id, port.cash_amt);
+	}
+	
 	@GetMapping("/portfolio/")
 	public Portfolio getOne(@RequestParam int port_id) {
 		return service.getPortfolio(port_id);
+	}
+	
+	@PostMapping("/holdings/")
+	public int insertStock(@RequestBody Stock stock ) {
+		return service.insertStock(stock.id, stock.symbol, stock.num_of_shares);
+	}
+	
+	@GetMapping("/holdings/")
+	public List<Stock> getStocks(@RequestParam int port_id) {
+		return service.getStockHoldings(port_id);
 	}
 }
