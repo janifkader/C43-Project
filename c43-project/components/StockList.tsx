@@ -578,7 +578,7 @@ function StockList() {
 		      />
 		    </Box>
 		  </Grid></>)}
-			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist.visibility + ", Total Value: "}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist.visibility}</Subtitle></Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleOpenReviews}>View Reviews</Button></Grid>
 			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpen}>Share Stock List</Button></Grid>
 			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpenUnshare}>Unshare Stock List</Button></Grid>
