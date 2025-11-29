@@ -110,11 +110,8 @@ public class StockRepo {
         return history;
     }
 	
-	public boolean addDailyStockData(Date timestamp, double open, double high, double low, double close, long volume, String symbol) {
-
-	
 	// Add new daily stock data (data beyond the given historical data, added by the user). This data is added to NewDailyStock table and has no duplicates in DailyStock.
-	public boolean addDailyStockData(String symbol, Date timestamp, double open, double high, double low, double close, long volume) {
+	public boolean addDailyStockData(Date timestamp, double open, double high, double low, double close, long volume, String symbol) {
         
 		Connection conn = null;
         PreparedStatement pstmt = null;

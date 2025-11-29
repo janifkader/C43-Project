@@ -1,7 +1,10 @@
 package com.c43.portfolio_manager.endpoints;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.*;
 
+import com.c43.portfolio_manager.model.User;
 import com.c43.portfolio_manager.service.UserService;
 
 @RestController
