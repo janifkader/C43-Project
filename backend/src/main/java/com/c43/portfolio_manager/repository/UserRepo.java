@@ -10,6 +10,8 @@ import com.c43.portfolio_manager.Database;
 import com.c43.portfolio_manager.model.User;
 
 public class UserRepo {
+	
+	// Create a new user upon registering.
 	public int createUser(String username, String password) {
 	    String sql = "INSERT INTO Users (username, password) VALUES (?, ?) RETURNING user_id;";
 	    Connection conn = null;
@@ -39,6 +41,8 @@ public class UserRepo {
 	    return -1;
 	}
 	
+	
+	// Use to check if login details are correct.
 	public int getUser(String username, String password) {
 		String sql = "SELECT user_id FROM Users WHERE username = ? AND password = ?";
 		Connection conn = null;
@@ -67,59 +71,33 @@ public class UserRepo {
 		return -1;
 	}
 	
-	public String getUserbyID (int user_id) {
-		String sql = "SELECT username FROM Users WHERE user_id = ?";
-		Connection conn = null;
-	    PreparedStatement pstmt = null;
-	    ResultSet rs = null;
-		try {
-			conn = Database.getConnection(); 
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, user_id);
-			
-			rs = pstmt.executeQuery();
-			
-			if (rs.next()) {
-				return rs.getString("username");
-			}
-		}
-		catch (SQLException e) {
-			e.printStackTrace();
-		}
-		finally {
-	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-	    }
-		return "";
-	}
 	
-	public List<User> getUsers() {
-		String sql = "SELECT user_id, username FROM Users";
-		Connection conn = null;
-	    PreparedStatement pstmt = null;
-	    ResultSet rs = null;
-	    List<User> users = new ArrayList<>();
-		try {
-			conn = Database.getConnection(); 
-			pstmt = conn.prepareStatement(sql);
-			
-			rs = pstmt.executeQuery();
-			
-			while (rs.next()) {
-				int user_id = rs.getInt("user_id");
-				String name = rs.getString("username");
-				users.add(new User(user_id, name, ""));
-			}
-		}
-		catch (SQLException e) {
-			e.printStackTrace();
-		}
-		finally {
-	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-	    }
-		return users;
-	}
+	// Get user's details (username) using user_id.
+	public String getUsername(int user_id) {
+        String sql = "SELECT username FROM Users WHERE user_id = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = Database.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, user_id);
+            
+            rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+        return null;
+    }
+
 }
