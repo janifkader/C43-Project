@@ -263,30 +263,32 @@ public class PortfolioRepo {
 	    return -1;
 	}
 	
-	// Add a stock to portfolio.
-	public boolean createStockHoldings(String symbol, int port_id, int num_of_shares) {
-	    String sql = "INSERT INTO stock_holdings (symbol, port_id, num_of_shares) VALUES (?, ?, ?)";
-	    
+	public int updatePortfolio(int port_id, double cash_amt) {
+	    String sql = "UPDATE Portfolio SET cash_amt = ? WHERE port_id = ? RETURNING port_id;";
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
 	    try {
-	    	conn = Database.getConnection();
+	    	conn = Database.getConnection(); 
 	    	pstmt = conn.prepareStatement(sql);
-	        pstmt.setString(1, symbol);
+	        pstmt.setDouble(1, cash_amt);
 	        pstmt.setInt(2, port_id);
-	        pstmt.setInt(3, num_of_shares);
 
-	        int rowsInserted = pstmt.executeUpdate();
-            return rowsInserted > 0;
+	        rs = pstmt.executeQuery();
 
-	    }
+	        if (rs.next()) {
+	            return rs.getInt("port_id");
+	        }
+	    } 
 	    catch (SQLException e) {
 	        e.printStackTrace();
-	        return false;
 	    }
 	    finally {
-	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace();}
-	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace();}
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
 	    }
+
+	    return -1;
 	}
 }
