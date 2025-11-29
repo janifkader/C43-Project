@@ -10,7 +10,7 @@ import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
-import { signup, signin } from '../api/api';
+import { signup, signin, createPortfolio } from '../api/api';
 import { useRouter } from "next/navigation";
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -67,6 +67,9 @@ function Login() {
     if (response && response != -1){
       console.log(response);
       localStorage.setItem("user_id", response);
+      if (action === "signup") {
+        await createPortfolio(0, response, 0);
+      }
       router.push("/home");
     }
     else{
