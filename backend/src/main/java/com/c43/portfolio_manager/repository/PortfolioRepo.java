@@ -163,13 +163,19 @@ public class PortfolioRepo {
 	}
 	
 	public int insertStock(int port_id, String symbol, int num_of_shares) {
-	    String sql = "INSERT INTO stock_holdings (port_id, symbol, num_of_shares) VALUES (?, ?, ?) RETURNING port_id;";
+	    String sql = "INSERT INTO stock_holdings (port_id, symbol, num_of_shares) " +
+	                 "VALUES (?, ?, ?) " +
+	                 "ON CONFLICT (port_id, symbol) " +
+	                 "DO UPDATE SET num_of_shares = stock_holdings.num_of_shares + EXCLUDED.num_of_shares " +
+	                 "RETURNING port_id;";
+
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
 	    ResultSet rs = null;
+
 	    try {
-	    	conn = Database.getConnection(); 
-	    	pstmt = conn.prepareStatement(sql);
+	        conn = Database.getConnection();
+	        pstmt = conn.prepareStatement(sql);
 	        pstmt.setInt(1, port_id);
 	        pstmt.setString(2, symbol);
 	        pstmt.setInt(3, num_of_shares);
@@ -184,6 +190,7 @@ public class PortfolioRepo {
 	        e.printStackTrace();
 	    }
 	    finally {
+	        // ... your existing close logic ...
 	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
 	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
 	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }

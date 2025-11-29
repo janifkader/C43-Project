@@ -97,6 +97,10 @@ function Home() {
 		setOpenSL(false);
 	}
 
+	const handleFriend = function() {
+		router.push("friends");
+	}
+
 	const handleSubmitPort = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -257,6 +261,7 @@ function Home() {
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio Manager"}</Title></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Portfolios"}</Subtitle></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Stock Lists"}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleFriend}>{"View Friends"}</Button></Grid>
 			<Grid size={6} display="flex" justifyContent="center">
 				<Box sx={{ width: "100%", height: portHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
 		      <List

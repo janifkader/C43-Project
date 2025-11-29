@@ -59,12 +59,13 @@ function Login() {
     const password = passwordRef.current?.value || "";
     let response;
     if (action === "signin") {
-      response = await signin(username, password);
+      response = await signin(0, username, password);
     } 
     else if (action === "signup") {
-      response = await signup(username, password);
+      response = await signup(0, username, password);
     }
     if (response && response != -1){
+      console.log(response);
       localStorage.setItem("user_id", response);
       router.push("/home");
     }

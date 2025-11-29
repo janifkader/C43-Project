@@ -138,7 +138,7 @@ public class FriendRequestRepo {
 	
 	// Gets all the incoming friend requests for the user.
 	public List<FriendRequest> getIncomingFriendRequests(int user_id) {
-	    String sql = "SELECT * FROM FriendRequest WHERE receiver_id = ?";
+	    String sql = "SELECT U.username, U.user_id AS id, Fr.* FROM FriendRequest Fr JOIN Users U ON Fr.sender_id = U.user_id WHERE Fr.receiver_id = ? AND Fr.status = 'PENDING'";
 	    List<FriendRequest> requests = new ArrayList<>();
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
@@ -154,9 +154,10 @@ public class FriendRequestRepo {
 	        	int request_id = rs.getInt("request_id");
 	    		int sender_id = rs.getInt("sender_id");
 	    		int receiver_id = rs.getInt("receiver_id");
+	    		String username = rs.getString("username");
 	    		String status = rs.getString("status");
 	    		Timestamp last_updated = rs.getTimestamp("last_updated");
-                requests.add(new FriendRequest(request_id, sender_id, receiver_id, status, last_updated));
+                requests.add(new FriendRequest(request_id, sender_id, receiver_id, username, status, last_updated));
 	        }
 	    }
 	    catch (SQLException e) {
@@ -174,7 +175,7 @@ public class FriendRequestRepo {
 	
 	// Gets all the outgoing friend requests for the user.
 	public List<FriendRequest> getOutgoingFriendRequests(int user_id) {
-	    String sql = "SELECT * FROM FriendRequest WHERE sender_id = ?";
+	    String sql = "SELECT U.username, U.user_id AS id, Fr.* FROM FriendRequest Fr JOIN Users U ON Fr.receiver_id = U.user_id WHERE Fr.sender_id = ? AND Fr.status != 'CANCELLED' AND Fr.status != 'ACCEPTED' AND Fr.status != 'REMOVED'";
 	    List<FriendRequest> requests = new ArrayList<>();
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
@@ -190,9 +191,10 @@ public class FriendRequestRepo {
 	        	int request_id = rs.getInt("request_id");
 	    		int sender_id = rs.getInt("sender_id");
 	    		int receiver_id = rs.getInt("receiver_id");
+	    		String username = rs.getString("username");
 	    		String status = rs.getString("status");
 	    		Timestamp last_updated = rs.getTimestamp("last_updated");
-	            requests.add(new FriendRequest(request_id, sender_id, receiver_id, status, last_updated));
+	            requests.add(new FriendRequest(request_id, sender_id, receiver_id, username, status, last_updated));
 	        }
 	    }
 	    catch (SQLException e) {
@@ -287,7 +289,7 @@ public class FriendRequestRepo {
 	
 	// Unsend a sent friend request before it is accepted by the other user.
 	public boolean unsendFriendRequest(int request_id, int user_id) {
-		String sql = "UPDATE FriendRequest SET status = 'CANCELLED', last_updated = ? WHERE request_id = ? AND sender_id = ? AND status = 'PENDING'";
+		String sql = "UPDATE FriendRequest SET status = 'CANCELLED', last_updated = ? WHERE request_id = ? AND sender_id = ? AND status = 'PENDING' OR status = 'REJECTED'";
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
 	    try {
@@ -312,9 +314,9 @@ public class FriendRequestRepo {
 	
 	
 	// Show all friends of the user.
-	public List<Integer> showFriends(int user_id) {
-		String sql = "SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS friend_id FROM FriendRequest WHERE (sender_id = ? OR receiver_id = ?) AND status = 'ACCEPTED'";
-	    List<Integer> friends_list = new ArrayList<>();
+	public List<FriendRequest> showFriends(int user_id) {
+		String sql = "SELECT U.username, U.user_id AS friend_id, fr.* FROM FriendRequest fr JOIN Users U ON (fr.sender_id = U.user_id OR fr.receiver_id = U.user_id) WHERE (fr.sender_id = ? OR fr.receiver_id = ?) AND fr.status = 'ACCEPTED' AND U.user_id != ?";
+	    List<FriendRequest> friends_list = new ArrayList<>();
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
 	    ResultSet rs = null;
@@ -328,7 +330,13 @@ public class FriendRequestRepo {
 	        rs = pstmt.executeQuery();
 
 	        while (rs.next()) {
-	        	friends_list.add(rs.getInt("friend_id"));
+	        	int request_id = rs.getInt("request_id");
+	    		int sender_id = rs.getInt("sender_id");
+	    		int receiver_id = rs.getInt("receiver_id");
+	    		String username = rs.getString("username");
+	    		String status = rs.getString("status");
+	    		Timestamp last_updated = rs.getTimestamp("last_updated");
+	            friends_list.add(new FriendRequest(request_id, sender_id, receiver_id, username, status, last_updated));
 	        }
 	    }
 	    catch (SQLException e) {

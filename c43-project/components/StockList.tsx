@@ -13,6 +13,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { List, RowComponentProps } from 'react-window';
+import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -21,6 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Review from './Review'
 import { insertSLStock, getStockList, getStockListStocks, getStocks } from '../api/api';
 import { useRouter } from "next/navigation";
 
@@ -79,12 +81,21 @@ function StockList() {
 	const [allStocksTotal, setAllStocksTotal] = useState(0);
 	const [insertDialog, setInsertDialog] = useState(false);
 	const [dialogSymbol, setDialogSymbol] = useState<string>('');
+	const [reviews, setReviews] = useState(false);
 	const searchRef = useRef<HTMLInputElement>(null);
 	const sharesRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
 
 	const handleHome = function () {
 		router.push('/home');
+	}
+
+	const handleOpenReviews = function () {
+		setReviews(true);
+	}
+
+	const handleCloseReviews = function () {
+		setReviews(false);
 	}
 
 	const handleInsertDialog = function(symbol: string) {
@@ -183,6 +194,13 @@ function StockList() {
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>
+			<Drawer
+				anchor="bottom"
+				open={reviews}
+				onClose={handleCloseReviews}
+			>
+				<Review/>
+			</Drawer>
 			<Dialog 
 				open={insertDialog} 
 				onClose={handleCloseInsert}
@@ -282,6 +300,7 @@ function StockList() {
 		    </Box>
 		  </Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist.visibility}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleOpenReviews}>View Reviews</Button></Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleHome}>← Home</Button></Grid>
 			</Grid>
 		</div>
