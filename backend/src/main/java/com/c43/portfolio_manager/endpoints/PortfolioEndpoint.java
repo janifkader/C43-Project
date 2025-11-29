@@ -8,27 +8,41 @@ import com.c43.portfolio_manager.service.PortfolioService;
 import com.c43.portfolio_manager.model.Portfolio;
 
 @RestController
-@RequestMapping("/portfolios")
+@RequestMapping("/portfolio")
 public class PortfolioEndpoint {
-	private final PortfolioService service;
-	
-	public PortfolioEndpoint(PortfolioService service) {
-		System.out.println("FUCK MED ADDYA");
-		this.service = service;
-	}
-	
-	@PostMapping("/")
-	public int create(@RequestBody Portfolio port) {
-		return service.createPortfolio(port.user_id, port.cash_amt);
-	}
-	
-	@GetMapping("/")
-	public List<Portfolio> get(@RequestParam int user_id){
-		return service.getPortfolios(user_id);
-	}
-	
-	@GetMapping("/portfolio/")
-	public Portfolio getOne(@RequestParam int port_id) {
-		return service.getPortfolio(port_id);
-	}
+    private final PortfolioService service;
+    
+    public PortfolioEndpoint(PortfolioService service) {
+        this.service = service;
+    }
+    
+    @PostMapping("/create")
+    public int createPortfolio(@RequestParam int user_id, @RequestParam double cash_amt) {
+        return service.createPortfolio(user_id, cash_amt);
+    }
+    
+    @GetMapping("/user")
+    public List<Portfolio> getPortfolios(@RequestParam int user_id) {
+        return service.getPortfolios(user_id);
+    }
+    
+    @GetMapping("/{port_id}")
+    public Portfolio getPortfolio(@PathVariable int port_id) {
+        return service.getPortfolio(port_id);
+    }
+    
+    @PostMapping("/add-stock")
+    public boolean addStock(@RequestParam String symbol, @RequestParam int port_id, @RequestParam int num_of_shares) {
+        return service.createStockHoldings(symbol, port_id, num_of_shares);
+    }
+    
+    @GetMapping("/holdings/{port_id}")
+    public List<Object[]> getStockHoldings(@PathVariable int port_id) {
+        return service.getStockHoldings(port_id);
+    }
+    
+    @PutMapping("/update-cash")
+    public boolean updateCash(@RequestParam int port_id, @RequestParam double new_cash_amt) {
+        return service.updateCash(port_id, new_cash_amt);
+    }
 }
