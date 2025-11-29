@@ -60,7 +60,7 @@ public class ReviewRepo {
 	        	String text = rs.getString("text");
 	            reviews.add(new ReviewText(username, text));
 	        }
-	    } 
+	    }
 	    catch (SQLException e) {
 	        e.printStackTrace();
 	    }
@@ -73,18 +73,53 @@ public class ReviewRepo {
 	    return reviews;
 	}
 	
-	/*public boolean deleteReview(Connection conn, int review_id) {
-		String sql = "DELETE FROM Review WHERE review_id = ?";
-		
-		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setInt(1, review_id);
-			
-			pstmt.executeQuery();
-			return true;
-		}
-		catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}*/
+	public boolean deleteReview(int review_id, int user_id) {
+		// delete review only if (1. Deleter is the person who wrote review) or (2. Deleter owns Stocklist)
+        String sql = "DELETE FROM Review WHERE review_id = ? AND (user_id = ? OR sl_id IN (SELECT sl_id FROM StockList WHERE user_id = ?))";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = Database.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, review_id);
+            pstmt.setInt(2, user_id);
+            pstmt.setInt(3, user_id);
+            
+            int rowsDeleted = pstmt.executeUpdate();
+            return rowsDeleted > 0;
+        } 
+        catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        finally {
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+	
+	public boolean editReview(int review_id, int user_id, String new_text) {
+        String sql = "UPDATE Review SET text = ? WHERE review_id = ? AND user_id = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = Database.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, new_text);
+            pstmt.setInt(2, review_id);
+            pstmt.setInt(3, user_id);
+            
+            int rowsUpdated = pstmt.executeUpdate();
+            return rowsUpdated > 0;
+        } 
+        catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        finally {
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+	
 }
