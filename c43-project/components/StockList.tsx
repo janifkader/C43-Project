@@ -24,7 +24,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Review from './Review'
-import { insertSLStock, getStockList, getStockListStocks, getStocks, deleteStockList, deleteStockListStock, shareStockList, getFriends, updateStockListVisibility } from '../api/api';
+import { insertSLStock, getStockList, getStockListStocks, getStocks, deleteStockList, deleteStockListStock, shareStockList, unshareStockList, getFriends, updateStockListVisibility } from '../api/api';
 import { useRouter } from "next/navigation";
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -94,6 +94,7 @@ function StockList() {
 	const [dialogSymbol, setDialogSymbol] = useState<string>('');
 	const [reviews, setReviews] = useState(false);
 	const [open, setOpen] = useState(false);
+	const [unshare, setUnshare] = useState(false);
 	const [friends, setFriends] = useState<FriendRequest[]>([]);
 	const [friendsTotal, setFriendsTotal] = useState(0);
 	const [invalid, setInvalid] = useState(false);
@@ -109,6 +110,14 @@ function StockList() {
 
 	const handleCloseSL = function() {
 		setOpenSL(false);
+	}
+
+	const handleOpenUnshare = function() {
+		setUnshare(true);
+	}
+
+	const handleCloseUnshare = function() {
+		setUnshare(false);
 	}
 
 	const handleVisibility = async function (newVisibility: string) {
@@ -152,6 +161,18 @@ function StockList() {
 		}
 		else{
 			setDialogText("There was an error trying to share the Stock List.");
+		}
+		handleInvalidOpen();
+	}
+
+	const handleUnshare = async function (user_id: string) {
+		const share = await unshareStockList(stocklist.sl_id, user_id);
+		handleCloseUnshare();
+		if (share != -1){
+			setDialogText("Stock List Successfully unshared!");
+		}
+		else{
+			setDialogText("There was an error trying to unshare the Stock List.");
 		}
 		handleInvalidOpen();
 	}
@@ -288,6 +309,18 @@ function StockList() {
 	  );
 	}
 
+	function UnshareRow({ index, friends, style }: RowComponentProps<{ friends: FriendRequest[] }>) {
+	  const friend = friends[index];
+	  const friend_id = (currentUser == friend.receiver_id) ? friend.sender_id : friend.receiver_id;
+	  return (
+	    <ListItem style={style} key={index} component="div">
+	    	<ListItemButton onClick={() => handleUnshare(friend_id)}>
+	        <ListItemText primary={friend.username} />
+	      </ListItemButton>
+	    </ListItem>
+	  );
+	}
+
 	useEffect(() => {
 		const fetchSl = async function () {
 			const sl = await getStockList(localStorage.getItem("sl_id"));
@@ -371,7 +404,7 @@ function StockList() {
           },
         }}
 			>
-        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Portfolio</DialogTitle>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Share Stock List</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
           	Select a friend to share your stock list.
@@ -384,6 +417,38 @@ function StockList() {
 			        rowProps={{ friends }}
 			        overscanCount={5}
 			        rowComponent={FriendRow}
+			      />
+			    </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleClose}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog 
+				open={unshare} 
+				onClose={handleCloseUnshare}
+				PaperProps={{
+          sx: {
+            backgroundColor: "#2798F5",
+            color: "#8FCAFA",
+            fontFamily: tomorrow.style.fontFamily,
+          },
+        }}
+			>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Unshare Stock List</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
+          	Select a friend to unshare your stock list.
+          </DialogContentText>
+            <Box sx={{ width: "100%", height: friendsHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+			      <List
+			        rowHeight={46}
+			        rowCount={friendsTotal}
+			        style={{ friendsHeight, width: 360 }}
+			        rowProps={{ friends }}
+			        overscanCount={5}
+			        rowComponent={UnshareRow}
 			      />
 			    </Box>
         </DialogContent>
@@ -515,9 +580,10 @@ function StockList() {
 		  </Grid></>)}
 			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist.visibility + ", Total Value: "}</Subtitle></Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleOpenReviews}>View Reviews</Button></Grid>
-			<Grid size={4} display="flex" justifyContent="center"><Button onClick={handleOpen}>Share Stock List</Button></Grid>
-			<Grid size={4} display="flex" justifyContent="center"><Button onClick={handleDelete}>Delete Stock List</Button></Grid>
-			<Grid size={4} display="flex" justifyContent="center"><Button onClick={handleOpenSL}>Update Visibility</Button></Grid>
+			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpen}>Share Stock List</Button></Grid>
+			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpenUnshare}>Unshare Stock List</Button></Grid>
+			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleDelete}>Delete Stock List</Button></Grid>
+			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpenSL}>Update Visibility</Button></Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleHome}>← Home</Button></Grid>
 			</Grid>
 		</div>

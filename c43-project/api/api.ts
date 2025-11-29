@@ -56,6 +56,11 @@ export function shareStockList(sl_id: number, user_id: number) {
     return send("POST", `/stocklist/shared/?sl_id=${sl_id}&user_id=${user_id}`);
 }
 
+export function unshareStockList(sl_id: number, user_id: number) {
+    return send("DELETE", `/stocklist/shared/?sl_id=${sl_id}&user_id=${user_id}`);
+}
+
+
 export function getSharedStockLists(user_id: number) {
     return send("GET", `/stocklist/shared/?user_id=${user_id}`);
 }
@@ -124,8 +129,8 @@ export function deleteReview(review_id: number, user_id: number) {
     return send("DELETE", `/reviews/?review_id=${review_id}&user_id=${user_id}`);
 }
 
-export function editReview(review_id: number, user_id: number, sl_id: number, text: string, username) {
-    return send("PUT", `/reviews/`, {review_id, user_id, sl_id, text, username});
+export function editReview(review_id: number, user_id: number, text: string) {
+    return send("PUT", `/reviews/?review_id=${review_id}&user_id=${user_id}&text=${text}`);
 }
 
 export function getFriends(user_id: number) {
@@ -160,8 +165,8 @@ export function unsendFriendRequest(request_id: number, user_id: number) {
     return send("POST", `/friends/unsend/?request_id=${request_id}&user_id=${user_id}`);
 }
 
-export function logStock(timestamp: Date, open: number, high: number, low: number, close: number, volume: number, symbol: string) {
-    return send("POST", `/stock/`, {timestamp, open, high, low, close, volume, symbol});
+export function logStock(open: number, high: number, low: number, close: number, volume: number, symbol: string) {
+    return send("POST", `/stock/?open=${open}&high=${high}&low=${low}&close=${close}&volume=${volume}&symbol=${symbol}`);
 }
 
 export function getHistory(symbol: string, start_date: Date, end_date: Date) {

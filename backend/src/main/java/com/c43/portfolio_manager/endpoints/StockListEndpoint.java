@@ -38,6 +38,11 @@ public class StockListEndpoint {
 		return service.share(sl_id, user_id);
 	}
 	
+	@DeleteMapping("/shared/")
+	public int unshare(@RequestParam int sl_id, @RequestParam int user_id) {
+		return service.unshare(sl_id, user_id);
+	}
+	
 	@GetMapping("/shared/")
 	public List<SharedStockList> getShared(@RequestParam int user_id) {
 		return service.getSharedStockLists(user_id);

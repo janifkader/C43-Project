@@ -33,7 +33,7 @@ public class ReviewEndpoint {
     }
     
     @PutMapping("/")
-    public boolean editReview(@RequestBody Review review) {
-        return service.editReview(review.review_id, review.user_id, review.text);
+    public boolean editReview(@RequestParam int review_id, @RequestParam int user_id, @RequestParam String text) {
+        return service.editReview(review_id, user_id, text);
     }
 }

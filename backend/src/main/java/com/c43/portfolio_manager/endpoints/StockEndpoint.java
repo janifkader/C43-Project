@@ -30,11 +30,8 @@ public class StockEndpoint {
 	}
 	
 	@PostMapping("/")
-	public boolean addDailyStockData(@RequestBody DailystockRequest ds) {
-		String ts = String.valueOf(ds.timestamp);
-		System.out.println("TIME: " + ts);
-		Date timestamp = java.sql.Date.valueOf(ts);
-		return service.addDailyStockData(timestamp, ds.open, ds.high, ds.low, ds.close, ds.volume, ds.symbol);
+	public boolean addDailyStockData(@RequestParam double open, @RequestParam double high, @RequestParam double low ,@RequestParam double close, @RequestParam int volume, @RequestParam String symbol) {
+		return service.addDailyStockData(new Date(System.currentTimeMillis()), open, high, low, close, volume, symbol);
 	}
 	
 	@GetMapping("/predict/")

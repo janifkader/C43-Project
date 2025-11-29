@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { styled } from '@mui/material/styles';
 import { krona, tomorrow } from "../app/fonts";
 import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import NumberField from './NumberField';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -95,6 +96,7 @@ function Portfolio() {
 	const [insertDialog, setInsertDialog] = useState(false);
 	const [dialogSymbol, setDialogSymbol] = useState<string>('');
 	const [open, setOpen] = useState(false);
+	const [openTime, setOpenTime] = useState(false);
 	const [invalid, setInvalid] = useState(false);
 	const [dialogText, setDialogText] = useState("");
 	const [sell, setSell] = useState(false);
@@ -254,14 +256,40 @@ function Portfolio() {
 	  }
   };
 
-  const handleHistory = async function (symbol: string) {
+  const handleCloseTime = function () {
+  	setOpenTime(false);
+  }
+
+  const handleOpenTime = function (symbol: string) {
   	setSelectedSymbol(symbol);
+  	setOpenTime(true);
+  }
+
+  const handleHistory = async function (time: number) {
   	const today = new Date();
   	const todayStr = today.toISOString().split('T')[0];
-  	const ten = new Date(today);
-  	ten.setFullYear(today.getFullYear() - 10);
-  	const tenStr = ten.toISOString().split('T')[0];
-  	const his = await getHistory(symbol, tenStr, todayStr);
+  	const to = new Date(today);
+  	if (time == 0) {
+  		to.setDate(today.getDate() - 7);
+  	}
+  	else if (time == 1){
+  		to.setDate(today.getDate() - 30);	
+  	}
+  	else if (time == 2){
+  		to.setDate(today.getDate() - 120);
+  	}
+  	else if (time == 3){
+  		to.setFullYear(today.getFullYear() - 1);
+  	}
+  	else if (time == 4){
+  		to.setFullYear(today.getFullYear() - 5);
+  	}
+  	else if (time == 5){
+  		to.setFullYear(today.getFullYear() - 10);
+  	}
+  	const toStr = to.toISOString().split('T')[0];
+  	const his = await getHistory(selectedSymbol, toStr, todayStr);
+  	handleCloseTime();
   	setHistoryData(his);
     setHistoryOpen(true)
   }
@@ -276,13 +304,7 @@ function Portfolio() {
   const handleLog = async function () {
   	let ret = true;
   	for (let i = 0; i < stockTotal; i++) {
-  		let p = allPrices[i];
-  		console.log(new Date());
-  		const payload = {
-        ...p,
-        timestamp: new Date().toISOString().split('T')[0]
-      };
-  		let r = await logStock(payload);
+  		let r = await logStock(allPrices[i].open, allPrices[i].high, allPrices[i].low, allPrices[i].close, allPrices[i].volume, allPrices[i].symbol);
   		if (r == false) {
   			ret = false;
   		}
@@ -310,7 +332,7 @@ function Portfolio() {
 	        <Button edge="end" onClick={() => handlePredict(h.symbol)} >
 	           PREDICT
 	         </Button>
-	       <ListItemButton onClick={() => handleHistory(h.symbol)}>
+	       <ListItemButton onClick={() => handleOpenTime(h.symbol)}>
 		       <ListItemText primary={text} primaryTypographyProps={{ 
 					    sx: { 
 					      fontFamily: krona.style.fontFamily, 
@@ -370,6 +392,36 @@ function Portfolio() {
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>
+			<Dialog 
+				open={openTime} 
+				onClose={handleCloseTime}
+				PaperProps={{
+          sx: {
+            backgroundColor: "#2798F5",
+            color: "#8FCAFA",
+            fontFamily: tomorrow.style.fontFamily,
+          },
+        }}
+			>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Stock List</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
+          	Select your stock list's visibility
+          </DialogContentText>
+            <ButtonGroup variant="contained">
+						  <Button sx={{ backgroundColor: "#2798F5" }} onClick={() => handleHistory(0)}>Week</Button>
+						  <Button sx={{ backgroundColor: "#2798F5" }} onClick={() => handleHistory(1)}>Month</Button>
+						  <Button sx={{ backgroundColor: "#2798F5" }} onClick={() => handleHistory(2)}>Quarter</Button>
+						  <Button sx={{ backgroundColor: "#2798F5" }} onClick={() => handleHistory(3)}>Year</Button>
+						  <Button sx={{ backgroundColor: "#2798F5" }} onClick={() => handleHistory(4)}>5 Years</Button>
+						  <Button sx={{ backgroundColor: "#2798F5" }} onClick={() => handleHistory(5)}>10 Years</Button>
+						</ButtonGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleCloseTime}>Cancel</Button>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} type="submit">Submit</Button>
+        </DialogActions>
+      </Dialog>
 			<Dialog 
 				open={sell} 
 				onClose={handleCloseSell}

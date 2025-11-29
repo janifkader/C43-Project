@@ -58,4 +58,8 @@ public class StockListService {
 	public int share(int sl_id, int user_id) {
 		return repo.shareStockList(sl_id, user_id);
 	}
+	
+	public int unshare(int sl_id, int user_id) {
+		return repo.unshareStockList(sl_id, user_id);
+	}
 }

@@ -125,7 +125,7 @@ function Review({ onClose }: { onClose: () => void }) {
 		const rev = currentReview;
 		rev.text = text;
 		setCurrentReview(rev);
-		const e = await editReview(currentReview);
+		const e = await editReview(currentReview.review_id, currentReview.user_id, text);
 		const update = await getReviews(stocklist.sl_id);
 		setReviews(update);
 		setReviewsTotal(update.length);

@@ -1,7 +1,6 @@
 package com.c43.portfolio_manager.model;
 
 public class DailystockRequest {
-	public String timestamp;
     public double open;
     public double high;
     public double low;
@@ -9,12 +8,12 @@ public class DailystockRequest {
     public int volume;
     public String symbol;
     
-    public DailystockRequest(String timestamp, double open, double high, double low, double close, int volume, String symbol) {
-    	this.timestamp = timestamp;
+    public DailystockRequest(double open, double high, double low, double close, int volume, String symbol) {
     	this.open = open;
     	this.high = high;
     	this.low = low;
     	this.close = close;
+    	this.volume = volume;
     	this.symbol = symbol;
     }
 }

@@ -318,4 +318,31 @@ public class StockListRepo {
 
 	    return -1;
 	}
+	
+	public int unshareStockList(int sl_id, int user_id) {
+		String sql = "DELETE FROM sharedto WHERE sl_id = ? and user_id = ? RETURNING sl_id";
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	    	conn = Database.getConnection();
+	        pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, sl_id);
+	        pstmt.setInt(2, user_id);
+	        rs = pstmt.executeQuery();
+	        if (rs.next()) {
+	        	return rs.getInt("sl_id");
+	        }
+	    } 
+	    catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
+
+	    return -1;
+	}
 }
