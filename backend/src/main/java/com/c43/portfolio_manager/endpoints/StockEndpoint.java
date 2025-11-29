@@ -33,4 +33,10 @@ public class StockEndpoint {
 		System.out.println(ds.timestamp);
 		return service.addDailyStockData(ds.timestamp, ds.open, ds.high, ds.low, ds.close, ds.volume, ds.symbol);
 	}
+	
+	@GetMapping("/predict")
+	public List<Object[]> predictFuturePrices(@RequestParam String symbol, @RequestParam int days_to_predict) {
+	    return service.predictFuturePrices(symbol, days_to_predict);
+	}
+	
 }
