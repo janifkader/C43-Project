@@ -130,6 +130,20 @@ function Friend() {
 		setFriendsTotal(update.length);
 	}
 
+	const getReqItemSize = function (index: number) {
+    const req = requests[index];
+    const text = req.username + ". Status: " + req.status + ", Last Updated: " + new Date(req.last_updated).toLocaleString() + ". Accept?";
+    const textLength = text.length;
+    return 50 + (Math.floor(textLength / 60) * 20); 
+	};
+
+	const getSentItemSize = function (index: number) {
+    const req = sent[index];
+    const text = req.username + ". Status: " + req.status + ", Last Updated: " + new Date(req.last_updated).toLocaleString() + ". Accept?";
+    const textLength = text.length;
+    return 50 + (Math.floor(textLength / 60) * 10); 
+	};
+
 	function FriendRow({ index, friends, style }: RowComponentProps<{ friends: FriendRequest[] }>) {
 	  const friend = friends[index];
 	  return (
@@ -145,7 +159,7 @@ function Friend() {
 
 	function RequestRow({ index, requests, style }: RowComponentProps<{ requests: FriendRequest[] }>) {
 	  const req = requests[index];
-	  const text = req.username + ". Status: " + req.status + ". Accept?";
+	  const text = req.username + ". Status: " + req.status + ", Last Updated: " + new Date(req.last_updated).toLocaleString() + ". Accept?";
 	  return (
 	    <ListItem style={style} key={index} component="div" secondaryAction={
               <IconButton edge="end" onClick={() => handleReject(req.request_id)} >
@@ -161,7 +175,7 @@ function Friend() {
 
 		function SentRow({ index, sent, style }: RowComponentProps<{ sent: FriendRequest[] }>) {
 		  const req = sent[index];
-		  const text = req.username + ". Status: " + req.status;
+		  const text = req.username + ". Status: " + req.status + ", Last Updated: " + new Date(req.last_updated).toLocaleString()
 		  return (
 		    <ListItem style={style} key={index} component="div" secondaryAction={
 	              <IconButton edge="end" onClick={() => handleUnsend(req.request_id)} >
@@ -205,9 +219,9 @@ function Friend() {
 	  }, []);
 
 	const friendsHeight = Math.min(friendsTotal * 46, 368);
-	const requestsHeight = Math.min(requestsTotal * 46, 368);
-	const sentHeight = Math.min(sentTotal * 46, 368);
-	const usersHeight = Math.min(usersTotal * 46, 368);
+	const requestsHeight = Math.min(requestsTotal * 60, 368);
+	const sentHeight = Math.min(sentTotal * 60, 368);
+	const usersHeight = Math.min(usersTotal * 60, 368);
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>
@@ -287,7 +301,7 @@ function Friend() {
 		   <Grid size={4} display="flex" justifyContent="center">
 				<Box sx={{ width: "100%", height: sentHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
 		      <List
-		        rowHeight={46}
+		        rowHeight={getSentItemSize}
 		        rowCount={sentTotal}
 		        style={{ sentHeight, width: 360 }}
 		        rowProps={{ sent }}
@@ -299,7 +313,7 @@ function Friend() {
 		  <Grid size={4} display="flex" justifyContent="center">
 		  	<Box sx={{ width: "100%", height: requestsHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
 		      <List
-		        rowHeight={46}
+		        rowHeight={getReqItemSize}
 		        rowCount={requestsTotal}
 		        style={{ requestsHeight, width: 360 }}
 		        rowProps={{ requests }}

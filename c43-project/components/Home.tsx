@@ -19,7 +19,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { createPortfolio, getPortfolios, createStockList, getStockLists } from '../api/api';
+import { createPortfolio, getPortfolios, createStockList, getStockLists, getSharedStockLists, getUser } from '../api/api';
 import { useRouter } from "next/navigation";
 
 interface Portfolio {
@@ -31,6 +31,13 @@ interface Portfolio {
 interface StockList {
 	sl_id: number;
 	user_id: number;
+	visibility: string;
+}
+
+interface SharedStockList {
+	sl_id: number;
+	user_id: number;
+	username: string;
 	visibility: string;
 }
 
@@ -95,6 +102,7 @@ function Home() {
 
 	const handleCloseSL = function() {
 		setOpenSL(false);
+		setVisibility("");
 	}
 
 	const handleFriend = function() {
@@ -118,15 +126,18 @@ function Home() {
 
   const handleVisibility = (newVisibility: string) => {
     setVisibility(newVisibility);
-};
+	};
 
 	const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
 	const [stockLists, setStockLists] = useState<StockList[]>([]);
+	const [shared, setShared] = useState<SharedStockList[]>([]);
 	const [portTotal, setPortTotal] = useState<number>(0);
 	const [slTotal, setSLTotal] = useState<number>(0);
+	const [sharedTotal, setSharedTotal] = useState<number>(0);
 	const [openPort, setOpenPort] = useState(false);
 	const [openSL, setOpenSL] = useState(false);
-	const [visibility, setVisibility] = useState<string>('private');
+	const [visibility, setVisibility] = useState<string>('');
+	const [username, setUsername] = useState<string>('');
 	const cashAmtRef = useRef<HTMLInputElement>(null)
 	const router = useRouter();
 
@@ -170,6 +181,18 @@ function Home() {
 	  );
 	}
 
+	function SharedRow({ index, shared, style }: RowComponentProps<{ shared: SharedStockList[] }>) {
+	  const sl = shared[index];
+	  const text = sl.username + "'s Stock List: Visibility: " + sl.visibility;
+	  return (
+	    <ListItem style={style} key={index} component="div" disablePadding>
+	      <ListItemButton onClick={() => handleSLPage(sl.sl_id)}>
+	        <ListItemText primary={text} />
+	      </ListItemButton>
+	    </ListItem>
+	  );
+	}
+
 
 	  useEffect(function () {
 	    async function load() {
@@ -178,15 +201,21 @@ function Home() {
 	      setPortfolios(result);
 	      setPortTotal(result.length);
 	      const slResult = await getStockLists(user_id);
-	      console.log(slResult);
 	      setStockLists(slResult);
 	      setSLTotal(slResult.length);
+	      const sharedResult = await getSharedStockLists(user_id);
+	      setShared(sharedResult);
+	      setSharedTotal(sharedResult.length);
+	      const uName = await getUser(user_id);
+	      setUsername(uName);
+	      console.log("ME" + username);
 	    }
 	    load();
 	  }, []);
 
 	const portHeight = Math.min(portTotal * 46, 368);
 	const slHeight = Math.min(slTotal * 46, 368);
+	const sharedHeight = Math.min(sharedTotal * 46, 368);
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>
@@ -208,9 +237,8 @@ function Home() {
           	Select your stock list's visibility
           </DialogContentText>
             <ButtonGroup variant="contained">
-						  <Button onClick={() => handleVisibility("private")}>private</Button>
-						  <Button onClick={() => handleVisibility("restricted")}>restricted</Button>
-						  <Button onClick={() => handleVisibility("public")}>public</Button>
+						  <Button sx={{ backgroundColor: visibility == "private" ? "#1565C0" : "#2798F5" }} onClick={() => handleVisibility("private")}>private</Button>
+						  <Button sx={{ backgroundColor: visibility == "public" ? "#1565C0" : "#2798F5" }} onClick={() => handleVisibility("public")}>public</Button>
 						</ButtonGroup>
         </DialogContent>
         <DialogActions>
@@ -256,9 +284,9 @@ function Home() {
       spacing={3}
       justifyContent="center"
       alignItems="center"
-      sx={{ height: '100vh' }}
+      sx={{ minHeight: '100vh', pb: 5 }}
     >
-			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio Manager"}</Title></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Title>{username ? (username + "'s Portfolio Manager") : "Portfolio Manager"}</Title></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Portfolios"}</Subtitle></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Stock Lists"}</Subtitle></Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleFriend}>{"View Friends"}</Button></Grid>
@@ -288,6 +316,19 @@ function Home() {
 		  </Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Button onClick={handleOpenPort} sx={{ color: "#2798F5" }}>{"Add Portfolio"}</Button></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Button onClick={handleOpenSL} sx={{ color: "#2798F5" }}>{"Add Stock List"}</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Shared Stock Lists"}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center">
+		  	<Box sx={{ width: "100%", height: sharedHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+		      <List
+		        rowHeight={46}
+		        rowCount={sharedTotal}
+		        style={{ sharedHeight, width: 360 }}
+		        rowProps={{ shared }}
+		        overscanCount={5}
+		        rowComponent={SharedRow}
+		      />
+		    </Box>
+		  </Grid>
 			<Grid size={12} display="flex" justifyContent="center">
 				
 		   </Grid>
