@@ -110,6 +110,8 @@ public class StockRepo {
         return history;
     }
 	
+	public boolean addDailyStockData(Date timestamp, double open, double high, double low, double close, long volume, String symbol) {
+
 	
 	// Add new daily stock data (data beyond the given historical data, added by the user). This data is added to NewDailyStock table and has no duplicates in DailyStock.
 	public boolean addDailyStockData(String symbol, Date timestamp, double open, double high, double low, double close, long volume) {
@@ -119,6 +121,7 @@ public class StockRepo {
         ResultSet rs = null;
         try {
             conn = Database.getConnection();
+
             
             String check_historical_sql = "SELECT 1 FROM DailyStock WHERE symbol = ? AND timestamp = ?";
             pstmt = conn.prepareStatement(check_historical_sql);

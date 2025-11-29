@@ -16,12 +16,12 @@ public class TransactionEndpoint {
         this.service = service;
     }
     
-    @PostMapping("/create")
-    public int createTransaction(@RequestParam String symbol, @RequestParam int port_id, @RequestParam String type, @RequestParam int amount, @RequestParam double unit_cost) {
-        return service.createTransaction(symbol, port_id, type, amount, unit_cost);
+    @PostMapping("/")
+    public int createTransaction(@RequestBody Transaction trans) {
+        return service.createTransaction(trans.symbol, trans.port_id, trans.type, trans.amount, trans.unit_cost);
     }
     
-    @GetMapping("/portfolio/{port_id}")
+    @GetMapping("/{port_id}")
     public List<Transaction> getTransactions(@PathVariable int port_id) {
         return service.getTransactions(port_id);
     }

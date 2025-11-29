@@ -13,28 +13,23 @@ public class UserEndpoint {
         this.service = service;
     }
     
-    @PostMapping("/register")
-    public int register(@RequestParam String username, @RequestParam String password) {
-        return service.createUser(username, password);
+    @PostMapping("/register/")
+    public int register(@RequestBody User user) {
+        return service.createUser(user.username, user.password);
     }
     
-    @PostMapping("/login")
-    public int login(@RequestParam String username, @RequestParam String password) {
-        return service.getUser(username, password);
+    @PostMapping("/login/")
+    public int login(@RequestBody User user) {
+        return service.getUser(user.username, user.password);
     }
     
     @GetMapping("/{user_id}")
     public String getUsername(@PathVariable int user_id) {
-        return service.getUsername(user_id);
+    	return service.getUserByID(user_id);
     }
     
     @GetMapping("/users/")
     public List<User> getUsers() {
     	return service.getUsers();
-    }
-    
-    @GetMapping("/user/")
-    public String getUser(@RequestParam int user_id) {
-    	return service.getUserByID(user_id);
     }
 }

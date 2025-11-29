@@ -99,5 +99,33 @@ public class UserRepo {
         }
         return null;
     }
+	
+	// Get user's details (username) using user_id.
+	public String getUsername(int user_id) {
+        String sql = "SELECT username FROM Users WHERE user_id = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = Database.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, user_id);
+            
+            rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+        return null;
+    }
 
 }

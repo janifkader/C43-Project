@@ -17,12 +17,12 @@ public class PortfolioEndpoint {
         this.service = service;
     }
     
-    @PostMapping("/create")
-    public int createPortfolio(@RequestParam int user_id, @RequestParam double cash_amt) {
-        return service.createPortfolio(user_id, cash_amt);
+    @PostMapping("/")
+    public int createPortfolio(@RequestBody Portfolio port) {
+        return service.createPortfolio(port.user_id, port.cash_amt);
     }
     
-    @GetMapping("/user")
+    @GetMapping("/")
     public List<Portfolio> getPortfolios(@RequestParam int user_id) {
         return service.getPortfolios(user_id);
     }
@@ -32,18 +32,23 @@ public class PortfolioEndpoint {
         return service.getPortfolio(port_id);
     }
     
-    @PostMapping("/add-stock")
-    public boolean addStock(@RequestParam String symbol, @RequestParam int port_id, @RequestParam int num_of_shares) {
-        return service.createStockHoldings(symbol, port_id, num_of_shares);
+    @PostMapping("/add-stock/")
+    public int addStock(@RequestBody Stock stock) {
+        return service.createStockHoldings(stock.id, stock.symbol, stock.num_of_shares);
     }
     
     @GetMapping("/holdings/{port_id}")
-    public List<Object[]> getStockHoldings(@PathVariable int port_id) {
+    public List<Stock> getStockHoldings(@PathVariable int port_id) {
         return service.getStockHoldings(port_id);
     }
     
-    @PutMapping("/update-cash")
-    public boolean updateCash(@RequestParam int port_id, @RequestParam double new_cash_amt) {
-        return service.updateCash(port_id, new_cash_amt);
+    @PostMapping("/sell/")
+    public int sell(@RequestBody Stock stock, @RequestParam double price) {
+    	return service.sellStock(stock.id, stock.symbol, stock.num_of_shares, price);
+    }
+    
+    @PutMapping("/")
+    public int updateCash(@RequestBody Portfolio port) {
+        return service.updatePortfolio(port.port_id, port.cash_amt);
     }
 }
