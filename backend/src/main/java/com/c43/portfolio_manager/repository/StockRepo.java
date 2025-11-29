@@ -11,6 +11,10 @@ import java.util.List;
 import com.c43.portfolio_manager.Database;
 
 public class StockRepo {
+	
+	
+	// Search for stocks by its symbol (case insensitive, shows all stocks beginning with "search").
+	// Note: It contains historic data stocks and also new user created stocks.
 	public List<String> getStocks(String search) {
         String sql = "SELECT symbol FROM (SELECT DISTINCT symbol FROM Stock UNION SELECT DISTINCT symbol FROM NewDailyStock) AS all_stocks WHERE UPPER(symbol) LIKE UPPER(?)";
         List<String> stocks = new ArrayList<>();
@@ -39,6 +43,8 @@ public class StockRepo {
         return stocks;
     }
 	
+	
+	// Get latest close (i.e. current) price of the stock (look at both historic and user added).
 	public double getCurrentPrice(String symbol) {
         String sql = "SELECT close FROM (SELECT close, timestamp FROM DailyStock WHERE symbol = ? UNION ALL SELECT close, timestamp FROM NewDailyStock WHERE symbol = ?) AS combined_data ORDER BY timestamp DESC LIMIT 1";
         Connection conn = null;
@@ -67,6 +73,8 @@ public class StockRepo {
         return 0.0;
     }
 	
+	
+	// Get a list of daily close price of the stock for the given duration (historical + current data used for graph).
 	public List<Object[]> getStockHistory(String symbol, Date start_date, Date end_date) {
         String sql = "SELECT timestamp, close FROM DailyStock WHERE symbol = ? AND timestamp BETWEEN ? AND ? UNION ALL SELECT timestamp, close FROM NewDailyStock WHERE symbol = ? AND timestamp BETWEEN ? AND ? ORDER BY timestamp";
         List<Object[]> history = new ArrayList<>();
@@ -104,12 +112,17 @@ public class StockRepo {
 	
 	public boolean addDailyStockData(Date timestamp, double open, double high, double low, double close, long volume, String symbol) {
 
+	
+	// Add new daily stock data (data beyond the given historical data, added by the user). This data is added to NewDailyStock table and has no duplicates in DailyStock.
+	public boolean addDailyStockData(String symbol, Date timestamp, double open, double high, double low, double close, long volume) {
+        
 		Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
             conn = Database.getConnection();
 
+            
             String check_historical_sql = "SELECT 1 FROM DailyStock WHERE symbol = ? AND timestamp = ?";
             pstmt = conn.prepareStatement(check_historical_sql);
             pstmt.setString(1, symbol);
@@ -118,8 +131,8 @@ public class StockRepo {
             if (rs.next()) {return false;} // user added data already exists in historical data, can't modify.
             rs.close();
             pstmt.close();
-
-
+            
+            
             String upsertSql = "INSERT INTO NewDailyStock (symbol, timestamp, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO UPDATE SET (open, high, low, close, volume) = (?, ?, ?, ?, ?)";
             pstmt = conn.prepareStatement(upsertSql);
             pstmt.setString(1, symbol);
@@ -148,4 +161,5 @@ public class StockRepo {
             try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
+	
 }

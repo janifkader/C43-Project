@@ -12,8 +12,13 @@ import com.c43.portfolio_manager.model.Portfolio;
 import com.c43.portfolio_manager.model.Stock;
 
 public class PortfolioRepo {
+	
+	// Create a new portfolio for the user with selected cash amount (amt > 0).
 	public int createPortfolio(int user_id, double cash_amt) {
-	    String sql = "INSERT INTO Portfolio (user_id, cash_amt) VALUES (?, ?) RETURNING port_id;";
+		
+		if (cash_amt < 0) {return -1;}
+		
+	    String sql = "INSERT INTO Portfolio (user_id, cash_amt) VALUES (?, ?) RETURNING port_id";
 	    
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
@@ -29,7 +34,7 @@ public class PortfolioRepo {
 	        if (rs.next()) {
 	            return rs.getInt("port_id");
 	        }
-	    } 
+	    }
 	    catch (SQLException e) {
 	        e.printStackTrace();
 	    }
@@ -78,8 +83,9 @@ public class PortfolioRepo {
 	    return -1;
 	}
 	
+	// Get all portfolios made by the user.
 	public List<Portfolio> getPortfolios(int user_id) {
-	    String sql = "SELECT port_id, cash_amt FROM Portfolio WHERE user_id = ?;";
+	    String sql = "SELECT port_id, cash_amt FROM Portfolio WHERE user_id = ?";
 	    List<Portfolio> ports = new ArrayList<>();
 	    
 	    Connection conn = null;
@@ -109,8 +115,10 @@ public class PortfolioRepo {
 	    return ports;
 	}
 	
+	
+	// Get a singular requested portfolio associated with port_id.
 	public Portfolio getPortfolio(int port_id) {
-	    String sql = "SELECT user_id, cash_amt FROM Portfolio WHERE port_id = ?;";
+	    String sql = "SELECT user_id, cash_amt FROM Portfolio WHERE port_id = ?";
 	    
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
@@ -255,32 +263,30 @@ public class PortfolioRepo {
 	    return -1;
 	}
 	
-	public int updatePortfolio(int port_id, double cash_amt) {
-	    String sql = "UPDATE Portfolio SET cash_amt = ? WHERE port_id = ? RETURNING port_id;";
+	// Add a stock to portfolio.
+	public boolean createStockHoldings(String symbol, int port_id, int num_of_shares) {
+	    String sql = "INSERT INTO stock_holdings (symbol, port_id, num_of_shares) VALUES (?, ?, ?)";
+	    
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
-	    ResultSet rs = null;
 	    try {
-	    	conn = Database.getConnection(); 
+	    	conn = Database.getConnection();
 	    	pstmt = conn.prepareStatement(sql);
-	        pstmt.setDouble(1, cash_amt);
+	        pstmt.setString(1, symbol);
 	        pstmt.setInt(2, port_id);
+	        pstmt.setInt(3, num_of_shares);
 
-	        rs = pstmt.executeQuery();
+	        int rowsInserted = pstmt.executeUpdate();
+            return rowsInserted > 0;
 
-	        if (rs.next()) {
-	            return rs.getInt("port_id");
-	        }
-	    } 
+	    }
 	    catch (SQLException e) {
 	        e.printStackTrace();
+	        return false;
 	    }
 	    finally {
-	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace();}
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace();}
 	    }
-
-	    return -1;
 	}
 }
