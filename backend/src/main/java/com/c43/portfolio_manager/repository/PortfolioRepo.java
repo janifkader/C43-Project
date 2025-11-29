@@ -42,32 +42,40 @@ public class PortfolioRepo {
 	    return -1;
 	}
 	
-	public boolean createStockHoldings(String symbol, int port_id, int num_of_shares) {
-	    String sql = "INSERT INTO stock_holdings (symbol, port_id, num_of_shares) VALUES (?, ?, ?)";
-	    
+	public int createStockHoldings(int port_id, String symbol, int num_of_shares) {
+	    String sql = "INSERT INTO stock_holdings (port_id, symbol, num_of_shares) " +
+	                 "VALUES (?, ?, ?) " +
+	                 "ON CONFLICT (port_id, symbol) " +
+	                 "DO UPDATE SET num_of_shares = stock_holdings.num_of_shares + EXCLUDED.num_of_shares " +
+	                 "RETURNING port_id;";
+
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
 	    ResultSet rs = null;
+
 	    try {
-	    	conn = Database.getConnection();
-	    	pstmt = conn.prepareStatement(sql);
-	        pstmt.setString(1, symbol);
-	        pstmt.setInt(2, port_id);
+	        conn = Database.getConnection();
+	        pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, port_id);
+	        pstmt.setString(2, symbol);
 	        pstmt.setInt(3, num_of_shares);
 
-	        pstmt.executeQuery();
-	        return true;
+	        rs = pstmt.executeQuery();
 
+	        if (rs.next()) {
+	            return rs.getInt("port_id");
+	        }
 	    } 
 	    catch (SQLException e) {
 	        e.printStackTrace();
-	        return false;
 	    }
 	    finally {
 	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
 	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
 	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
 	    }
+
+	    return -1;
 	}
 	
 	public List<Portfolio> getPortfolios(int user_id) {
@@ -162,12 +170,51 @@ public class PortfolioRepo {
 	    return stocks;
 	}
 	
-	public int insertStock(int port_id, String symbol, int num_of_shares) {
-	    String sql = "INSERT INTO stock_holdings (port_id, symbol, num_of_shares) " +
-	                 "VALUES (?, ?, ?) " +
-	                 "ON CONFLICT (port_id, symbol) " +
-	                 "DO UPDATE SET num_of_shares = stock_holdings.num_of_shares + EXCLUDED.num_of_shares " +
-	                 "RETURNING port_id;";
+	public Stock getStockHolding(int port_id, String symbol) {
+	    String sql = "SELECT num_of_shares FROM stock_holdings WHERE port_id = ? AND symbol = ?;";
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    try {
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, port_id);
+	        pstmt.setString(2, symbol);
+
+	        rs = pstmt.executeQuery();
+
+	        if (rs.next()) {
+	        	int num_of_shares = rs.getInt("num_of_shares");
+	            return new Stock(port_id, symbol, num_of_shares);
+	        }
+	    } 
+	    catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
+
+	    return null;
+	}
+	
+	public int sellStock(int port_id, String symbol, int num_of_shares, double price) {
+		Stock currentShares = getStockHolding(port_id, symbol);
+		if (currentShares == null) {
+			return -1;
+		}
+		boolean sellAll = currentShares.num_of_shares <= num_of_shares;
+	    String sql = "";
+	    if (!sellAll) {
+	    	sql = "UPDATE stock_holdings SET num_of_shares = num_of_shares - ? WHERE port_id = ? AND symbol = ?;";
+	    }
+	    else {
+	    	sql = "DELETE FROM stock_holdings WHERE port_id = ? AND symbol = ?;";
+	    }
+	    System.out.println(sql);
+	    String sql2 = "UPDATE Portfolio SET cash_amt = cash_amt + ? WHERE port_id = ? RETURNING port_id;";
 
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
@@ -176,10 +223,20 @@ public class PortfolioRepo {
 	    try {
 	        conn = Database.getConnection();
 	        pstmt = conn.prepareStatement(sql);
-	        pstmt.setInt(1, port_id);
-	        pstmt.setString(2, symbol);
-	        pstmt.setInt(3, num_of_shares);
-
+	        if (!sellAll) {
+		        pstmt.setInt(1, num_of_shares);
+		        pstmt.setInt(2, port_id);
+		        pstmt.setString(3, symbol);
+	        }
+	        else {
+	        	pstmt.setInt(1, port_id);
+		        pstmt.setString(2, symbol);
+	        }
+	        pstmt.executeUpdate();
+	        pstmt.close();
+	        pstmt = conn.prepareStatement(sql2);
+	        pstmt.setDouble(1, price);
+	        pstmt.setInt(2, port_id);
 	        rs = pstmt.executeQuery();
 
 	        if (rs.next()) {
@@ -190,7 +247,6 @@ public class PortfolioRepo {
 	        e.printStackTrace();
 	    }
 	    finally {
-	        // ... your existing close logic ...
 	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
 	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
 	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
@@ -227,25 +283,4 @@ public class PortfolioRepo {
 
 	    return -1;
 	}
-	
-	/*public List<Portfolio> viewStockHoldings(Connection conn, int port_id) {
-		String sql = "SELECT symbol, num_of_shares FROM stock_holdings WHERE port_id = ?;";
-		List<Portfolio> stocks = new ArrayList<>();
-		
-		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setInt(1, port_id);
-			
-			ResultSet rs = pstmt.executeQuery();
-			
-			while (rs.next()) {
-				String symbol = rs.getString("symbol");
-				int num_of_shares = rs.getInt("num_of_shares");
-				stocks.add(new Portfolio(symbol, num_of_shares));
-			}
-		}
-		catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return stocks;
-	}*/
 }

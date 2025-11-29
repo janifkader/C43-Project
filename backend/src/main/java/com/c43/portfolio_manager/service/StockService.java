@@ -1,6 +1,7 @@
 package com.c43.portfolio_manager.service;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,5 +19,13 @@ public class StockService {
 	
 	public List<String> getStocks(String search) {
 		return repo.getStocks(search);
+	}
+	
+	public List<Object[]> getStockHistory(String symbol, Date start_date, Date end_date) {
+        return repo.getStockHistory(symbol, start_date, end_date);
+    }
+	
+	public boolean addDailyStockData(Date timestamp, double open, double high, double low, double close, long volume, String symbol) {
+		return repo.addDailyStockData(timestamp, open, high, low, close, volume, symbol);
 	}
 }

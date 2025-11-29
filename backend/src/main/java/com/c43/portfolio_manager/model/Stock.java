@@ -1,5 +1,7 @@
 package com.c43.portfolio_manager.model;
 
+import java.math.BigDecimal;
+
 public class Stock {
 	public int id;
 	public String symbol;

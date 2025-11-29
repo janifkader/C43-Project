@@ -25,7 +25,7 @@ public class UserService {
     }
 	
 	public String getUserByID(int user_id) {
-		return repo.getUserbyID(user_id);
+		return repo.getUsername(user_id);
 	}
 	
 	public List<User> getUsers() {

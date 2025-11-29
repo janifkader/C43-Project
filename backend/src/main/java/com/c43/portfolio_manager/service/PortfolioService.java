@@ -38,7 +38,11 @@ public class PortfolioService {
 		return repo.getStockHoldings(port_id);
 	}
 	
-	public int insertStock(int port_id, String symbol, int num_of_shares) {
-		return repo.insertStock(port_id, symbol, num_of_shares);
+	public int createStockHoldings(int port_id, String symbol, int num_of_shares) {
+		return repo.createStockHoldings(port_id, symbol, num_of_shares);
+	}
+	
+	public int sellStock(int port_id, String symbol, int num_of_shares, double price) {
+		return repo.sellStock(port_id, symbol, num_of_shares, price);
 	}
 }

@@ -8,31 +8,31 @@ import com.c43.portfolio_manager.model.User;
 import com.c43.portfolio_manager.service.UserService;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/user")
 public class UserEndpoint {
-	private final UserService service;
-
+    private final UserService service;
+    
     public UserEndpoint(UserService service) {
         this.service = service;
     }
     
-    @PostMapping("/signup/")
-    public int create(@RequestBody User user) {
+    @PostMapping("/register/")
+    public int register(@RequestBody User user) {
         return service.createUser(user.username, user.password);
     }
     
-    @PostMapping("/signin/")
-    public int get(@RequestBody User user) {
+    @PostMapping("/login/")
+    public int login(@RequestBody User user) {
         return service.getUser(user.username, user.password);
+    }
+    
+    @GetMapping("/{user_id}")
+    public String getUsername(@PathVariable int user_id) {
+    	return service.getUserByID(user_id);
     }
     
     @GetMapping("/users/")
     public List<User> getUsers() {
     	return service.getUsers();
-    }
-    
-    @GetMapping("/user/")
-    public String getUser(@RequestParam int user_id) {
-    	return service.getUserByID(user_id);
     }
 }
