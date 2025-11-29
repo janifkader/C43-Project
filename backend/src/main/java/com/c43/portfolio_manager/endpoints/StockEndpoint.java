@@ -7,6 +7,7 @@ import java.sql.Date;
 import org.springframework.web.bind.annotation.*;
 
 import com.c43.portfolio_manager.model.Dailystock;
+import com.c43.portfolio_manager.model.DailystockRequest;
 import com.c43.portfolio_manager.service.StockService;
 
 @RestController
@@ -29,8 +30,15 @@ public class StockEndpoint {
 	}
 	
 	@PostMapping("/")
-	public boolean addDailyStockData(@RequestBody Dailystock ds) {
-		System.out.println(ds.timestamp);
-		return service.addDailyStockData(ds.timestamp, ds.open, ds.high, ds.low, ds.close, ds.volume, ds.symbol);
+	public boolean addDailyStockData(@RequestBody DailystockRequest ds) {
+		String ts = String.valueOf(ds.timestamp);
+		System.out.println("TIME: " + ts);
+		Date timestamp = java.sql.Date.valueOf(ts);
+		return service.addDailyStockData(timestamp, ds.open, ds.high, ds.low, ds.close, ds.volume, ds.symbol);
+	}
+	
+	@GetMapping("/predict/")
+	public List<Object[]> predictFuturePrices(@RequestParam String symbol, @RequestParam int days_to_predict) {
+	    return service.predictFuturePrices(symbol, days_to_predict);
 	}
 }

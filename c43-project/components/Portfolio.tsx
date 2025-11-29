@@ -22,7 +22,7 @@ import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import HistoryDialog from './HistoryDialog'
-import { getPortfolio, getStocks, getPortfolioStocks, insertPortfolioStock, sellPortfolioStock, getPrice, getPortfolioPrices, updatePortfolio, addTransaction, logStock, getHistory } from '../api/api';
+import { getPortfolio, getStocks, getPortfolioStocks, insertPortfolioStock, sellPortfolioStock, getPrice, getPortfolioPrices, updatePortfolio, addTransaction, logStock, getHistory, getPrediction } from '../api/api';
 import { useRouter } from "next/navigation";
 
 const Title = styled(Typography)(({ theme }) => ({
@@ -266,6 +266,13 @@ function Portfolio() {
     setHistoryOpen(true)
   }
 
+  const handlePredict = async function (symbol: string) {
+  	setSelectedSymbol(symbol);
+  	const pred = await getPrediction(symbol, 30);
+  	setHistoryData(pred);
+    setHistoryOpen(true)
+  }
+
   const handleLog = async function () {
   	let ret = true;
   	for (let i = 0; i < stockTotal; i++) {
@@ -273,7 +280,7 @@ function Portfolio() {
   		console.log(new Date());
   		const payload = {
         ...p,
-        timestamp: new Date()// Forces "2025-11-29"
+        timestamp: new Date().toISOString().split('T')[0]
       };
   		let r = await logStock(payload);
   		if (r == false) {
@@ -300,6 +307,9 @@ function Portfolio() {
 	                SELL
 	              </Button>
 	            }>
+	        <Button edge="end" onClick={() => handlePredict(h.symbol)} >
+	           PREDICT
+	         </Button>
 	       <ListItemButton onClick={() => handleHistory(h.symbol)}>
 		       <ListItemText primary={text} primaryTypographyProps={{ 
 					    sx: { 
@@ -511,11 +521,11 @@ function Portfolio() {
          <IconButton onClick={handleOpenSearch} ><SearchIcon sx={{ color: "#2798F5", fontSize: 30 }}/></IconButton>
       </Grid>
       <Grid size={6} display="flex" justifyContent="center">
-		  	<Box sx={{ width: "100%", height: portHeight, maxWidth: 450, bgcolor: "#8FCAFA", color: "#2798F5" }}>
+		  	<Box sx={{ width: "100%", height: portHeight, maxWidth: 600, bgcolor: "#8FCAFA", color: "#2798F5" }}>
 		      <List
 		        rowHeight={46}
 		        rowCount={stockTotal}
-		        style={{ height: portHeight, width: 450 }}
+		        style={{ height: portHeight, width: 600 }}
 		        rowProps={{ stocks, allPrices }}
 		        overscanCount={5}
 		        rowComponent={PortRow}

@@ -167,3 +167,7 @@ export function logStock(timestamp: Date, open: number, high: number, low: numbe
 export function getHistory(symbol: string, start_date: Date, end_date: Date) {
     return send("GET", `/stock/history/?symbol=${symbol}&start_date=${start_date}&end_date=${end_date}`);
 }
+
+export function getPrediction(symbol: string, days: number) {
+    return send("GET", `/stock/predict/?symbol=${symbol}&days_to_predict=${days}`);
+}

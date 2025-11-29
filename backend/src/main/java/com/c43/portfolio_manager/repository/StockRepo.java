@@ -159,4 +159,23 @@ public class StockRepo {
         }
     }
 	
+
+	// Future prediction, increases 1% every day starting at last close price from past.
+	public List<Object[]> predictFuturePrices(String symbol, int days_to_predict) {
+
+	    double current_price = getCurrentPrice(symbol);
+	    if (current_price == 0.0) current_price = 100.0;
+
+	    List<Object[]> predictions = new ArrayList<>();
+	    double price = current_price;
+
+	    for (int i = 1; i <= days_to_predict; i++) {
+	        java.sql.Date future_date = new java.sql.Date(System.currentTimeMillis() + (i * 24L * 60 * 60 * 1000));
+	        price = price * 1.01;
+	        predictions.add(new Object[]{future_date, price});
+	    }
+
+	    return predictions;
+	}
+	
 }
