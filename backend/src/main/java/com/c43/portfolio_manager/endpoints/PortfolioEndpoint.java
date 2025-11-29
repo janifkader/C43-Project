@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.c43.portfolio_manager.service.PortfolioService;
 import com.c43.portfolio_manager.model.Portfolio;
+import com.c43.portfolio_manager.model.Stock;
 
 @RestController
 @RequestMapping("/portfolio")

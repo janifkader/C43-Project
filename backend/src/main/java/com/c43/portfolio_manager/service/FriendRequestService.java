@@ -38,7 +38,7 @@ public class FriendRequestService {
         return repo.unsendFriendRequest(request_id, user_id);
     }
     
-    public List<Integer> showFriends(int user_id) {
+    public List<FriendRequest> showFriends(int user_id) {
         return repo.showFriends(user_id);
     }
     

@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.c43.portfolio_manager.Database;
 import com.c43.portfolio_manager.model.Portfolio;
+import com.c43.portfolio_manager.model.Stock;
 
 public class PortfolioRepo {
 	

@@ -2,13 +2,13 @@ package com.c43.portfolio_manager.model;
 import java.sql.Date;
 
 public class Transaction {
-	private int transaction_id;
-	private String symbol;
-	private int port_id;
-	private String type;
-	private int amount;
-	private double unit_cost;
-	private Date date;
+	public int transaction_id;
+	public String symbol;
+	public int port_id;
+	public String type;
+	public int amount;
+	public double unit_cost;
+	public Date date;
 	
 	public Transaction(int transaction_id, String symbol, int port_id, String type, int amount, double unit_cost, Date date) {
 		this.transaction_id = transaction_id;

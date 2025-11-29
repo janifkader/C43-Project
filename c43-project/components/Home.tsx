@@ -97,6 +97,10 @@ function Home() {
 		setOpenSL(false);
 	}
 
+	const handleFriend = function() {
+		router.push("friends");
+	}
+
 	const handleSubmitPort = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -131,6 +135,7 @@ function Home() {
 		let port_id = await createPortfolio(0, user_id, cash_amt);
 		const refreshPorts = await getPortfolios(user_id);
 		setPortfolios(refreshPorts);
+		setPortTotal(refreshPorts.length);
 	}
 
 	const handleStockList = async function (visibility: string) {
@@ -138,6 +143,7 @@ function Home() {
 		let sl_id = await createStockList(0, user_id, visibility);
 		const refreshSls = await getStockLists(user_id);
 		setStockLists(refreshSls);
+		setSLTotal(refreshSls.length);
 	}
 
 	function PortRow({ index, portfolios, style }: RowComponentProps<{ portfolios: Portfolio[] }>) {
@@ -255,6 +261,7 @@ function Home() {
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio Manager"}</Title></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Portfolios"}</Subtitle></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Stock Lists"}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleFriend}>{"View Friends"}</Button></Grid>
 			<Grid size={6} display="flex" justifyContent="center">
 				<Box sx={{ width: "100%", height: portHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
 		      <List

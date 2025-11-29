@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.c43.portfolio_manager.model.Portfolio;
+import com.c43.portfolio_manager.model.Stock;
 import com.c43.portfolio_manager.repository.PortfolioRepo;
 
 @Service

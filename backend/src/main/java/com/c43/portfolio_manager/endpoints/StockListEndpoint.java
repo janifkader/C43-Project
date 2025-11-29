@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.c43.portfolio_manager.model.StockList;
+import com.c43.portfolio_manager.model.SharedStockList;
 import com.c43.portfolio_manager.model.Stock;
 import com.c43.portfolio_manager.service.StockListService;
 
@@ -27,6 +28,21 @@ public class StockListEndpoint {
 		return service.getStockLists(user_id);
 	}
 	
+	@PutMapping("/")
+	public int update(@RequestParam int sl_id, @RequestParam String visibility) {
+		return service.updateVisibility(sl_id, visibility);
+	}
+	
+	@PostMapping("/shared/")
+	public int share(@RequestParam int sl_id, @RequestParam int user_id) {
+		return service.share(sl_id, user_id);
+	}
+	
+	@GetMapping("/shared/")
+	public List<SharedStockList> getShared(@RequestParam int user_id) {
+		return service.getSharedStockLists(user_id);
+	}
+	
 	@GetMapping("/sl/")
 	public StockList getOne(@RequestParam int sl_id) {
 		return service.getStockList(sl_id);
@@ -34,11 +50,21 @@ public class StockListEndpoint {
 	
 	@PostMapping("/contains/")
 	public int insertStock(@RequestBody Stock stock ) {
-		return service.insertStock(stock.sl_id, stock.symbol, stock.num_of_shares);
+		return service.insertStock(stock.id, stock.symbol, stock.num_of_shares);
+	}
+	
+	@DeleteMapping("/contains/")
+	public int deleteStock(@RequestParam int sl_id, @RequestParam String symbol ) {
+		return service.deleteStock(sl_id, symbol);
 	}
 	
 	@GetMapping("/contains/")
 	public List<Stock> getStocks(@RequestParam int sl_id) {
 		return service.getStockListStocks(sl_id);
+	}
+	
+	@DeleteMapping("/")
+	public int delete(@RequestParam int sl_id) {
+		return service.deleteStockList(sl_id);
 	}
 }

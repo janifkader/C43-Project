@@ -1,12 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { styled } from '@mui/material/styles';
 import { krona, tomorrow } from "../app/fonts";
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
 import { signup, signin } from '../api/api';
 import { useRouter } from "next/navigation";
 
@@ -36,9 +39,14 @@ const LoginField = styled(TextField)(({ theme }) => ({
 
 function Login() {
 
+  const [invalid, setInvalid] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  const handleInvalid = function () {
+    setInvalid(false);
+  }
 
   const handleSubmit = async function (e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,27 +59,42 @@ function Login() {
     const password = passwordRef.current?.value || "";
     let response;
     if (action === "signin") {
-      response = await signin(username, password);
+      response = await signin(0, username, password);
     } 
     else if (action === "signup") {
-      response = await signup(username, password);
+      response = await signup(0, username, password);
     }
-    if (response && response.user_id) {
-      localStorage.setItem("user_id", response.user_id.toString());
-      console.log(response.user_id.toString());
-    }
-    else if (response){
+    if (response && response != -1){
+      console.log(response);
       localStorage.setItem("user_id", response);
-      console.log("LOGGED");
+      router.push("/home");
     }
     else{
-      console.log("what");
+      setInvalid(true);
     }
     form.reset();
-    router.push("/home");
   };
 
   return (
+    <>
+    <Dialog
+        open={invalid}
+        onClose={handleInvalid}
+        PaperProps={{
+          sx: {
+            backgroundColor: "#8FCAFA",
+            color: "#2798F5",
+            fontFamily: tomorrow.style.fontFamily,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }}>
+          Your usename/password is incorrect
+        </DialogTitle>
+        <DialogActions>
+          <Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleInvalid}>Close</Button>
+        </DialogActions>
+      </Dialog>
     <Box component="form" onSubmit={handleSubmit}
       sx={{ bgcolor: "#8FCAFA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, height: "100vh" }}
     >
@@ -83,6 +106,7 @@ function Login() {
       <Button type="submit" value="signin" sx={{ color: "#2798F5" }}>Login</Button>
       <Button type="submit" value="signup" sx={{ color: "#2798F5" }}>Register</Button>
     </Box>
+    </>
   );
 }
 

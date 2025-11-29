@@ -27,4 +27,14 @@ public class UserEndpoint {
     public String getUsername(@PathVariable int user_id) {
         return service.getUsername(user_id);
     }
+    
+    @GetMapping("/users/")
+    public List<User> getUsers() {
+    	return service.getUsers();
+    }
+    
+    @GetMapping("/user/")
+    public String getUser(@RequestParam int user_id) {
+    	return service.getUserByID(user_id);
+    }
 }
