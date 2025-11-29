@@ -26,6 +26,9 @@ public class StockMarketService {
             
             if (quote.isMissingNode()) {
                 System.out.println("Error fetching data for " + symbol);
+                System.out.println("QUOTE: " + quote);
+                System.out.println("JSON: " + jsonResponse);
+                System.out.println("STRING: " + url);
                 return BigDecimal.ZERO;
             }
 

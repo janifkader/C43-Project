@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.c43.portfolio_manager.model.Review;
+import com.c43.portfolio_manager.model.ReviewText;
 import com.c43.portfolio_manager.service.ReviewService;
 
 @RestController

@@ -18,8 +18,8 @@ public class TransactionEndpoint {
 	}
 	
 	@PostMapping("/")
-	public int create(@RequestParam String symbol, @RequestParam int port_id, @RequestParam String type, @RequestParam int amount, @RequestParam double unit_cost, @RequestParam Date date) {
-		return service.createTransaction(symbol, port_id, type, amount, unit_cost, date);
+	public int create(@RequestBody Transaction trans) {
+		return service.createTransaction(trans.symbol, trans.port_id, trans.type, trans.amount, trans.unit_cost, trans.date);
 	}
 	
 	@GetMapping("/")

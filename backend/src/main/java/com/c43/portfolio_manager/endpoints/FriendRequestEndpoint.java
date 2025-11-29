@@ -14,47 +14,47 @@ public class FriendRequestEndpoint {
         this.service = service;
     }
     
-    @PostMapping("/send")
+    @PostMapping("/")
     public int sendFriendRequest(@RequestParam int sender_id, @RequestParam int receiver_id) {
         return service.sendFriendRequest(sender_id, receiver_id);
     }
     
-    @GetMapping("/incoming")
+    @GetMapping("/incoming/")
     public List<FriendRequest> getIncomingRequests(@RequestParam int user_id) {
         return service.getIncomingFriendRequests(user_id);
     }
     
-    @GetMapping("/outgoing") 
+    @GetMapping("/outgoing/") 
     public List<FriendRequest> getOutgoingRequests(@RequestParam int user_id) {
         return service.getOutgoingFriendRequests(user_id);
     }
     
-    @PostMapping("/accept")
+    @PostMapping("/accept/")
     public boolean acceptRequest(@RequestParam int request_id) {
         return service.acceptFriendRequest(request_id);
     }
     
-    @PostMapping("/reject")
+    @PostMapping("/reject/")
     public boolean rejectRequest(@RequestParam int request_id) {
         return service.rejectFriendRequest(request_id);
     }
     
-    @PostMapping("/remove")
+    @PostMapping("/remove/")
     public boolean removeFriend(@RequestParam int request_id, @RequestParam int user_id) {
         return service.removeFriend(request_id, user_id);
     }
     
-    @PostMapping("/unsend")
+    @PostMapping("/unsend/")
     public boolean unsendRequest(@RequestParam int request_id, @RequestParam int user_id) {
         return service.unsendFriendRequest(request_id, user_id);
     }
     
-    @GetMapping("/list")
-    public List<Integer> getFriends(@RequestParam int user_id) {
+    @GetMapping("/")
+    public List<FriendRequest> getFriends(@RequestParam int user_id) {
         return service.showFriends(user_id);
     }
     
-    @GetMapping("/can-resend")
+    @GetMapping("/can-resend/")
     public boolean canResendRequest(@RequestParam int sender_id, @RequestParam int receiver_id) {
         return service.canResendRequest(sender_id, receiver_id);
     }
