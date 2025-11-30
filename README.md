@@ -1,3 +1,4 @@
+# PROJECT REPORT
 # Run Instructions:
 1. Clone the repo
 2. ```cd C43-Project/c43-project``` (frontend)
@@ -221,5 +222,6 @@ SELECT 1 FROM DailyStock WHERE symbol = ? AND timestamp = ?
 Insert new user-added daily stock data into the table, or update existing (user-added) records if the same symbol and timestamp already exist in the table:
 
 INSERT INTO NewDailyStock (symbol, timestamp, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO UPDATE SET (open, high, low, close, volume) = (?, ?, ?, ?, ?)
+
 
 
