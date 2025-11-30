@@ -224,4 +224,5 @@ Insert new user-added daily stock data into the table, or update existing (user-
 INSERT INTO NewDailyStock (symbol, timestamp, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO UPDATE SET (open, high, low, close, volume) = (?, ?, ?, ?, ?)
 
 
+# Appendix
 
