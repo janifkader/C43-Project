@@ -177,13 +177,23 @@ SELECT U.username, U.user_id AS friend_id, fr.* FROM FriendRequest fr JOIN Users
 
 ## Stock:
 
+Search for stock symbols from both historical data and user-added stocks where the symbol matches the search pattern (case insensitive):
+
 SELECT symbol FROM (SELECT DISTINCT symbol FROM Stock UNION SELECT DISTINCT symbol FROM NewDailyStock) AS all_stocks WHERE UPPER(symbol) LIKE UPPER(?)
+
+Get the most recent closing price for a stock by combining data from both historical and user-added tables and selecting the latest entry:
 
 SELECT close FROM (SELECT close, timestamp FROM DailyStock WHERE symbol = ? UNION ALL SELECT close, timestamp FROM NewDailyStock WHERE symbol = ?) AS combined_data ORDER BY timestamp DESC LIMIT 1
 
+Retrieve historical data for a stock, ordered with most recent data at the top within a date range, by combining records from both historical and user-added tables:
+
 SELECT timestamp, close FROM DailyStock WHERE symbol = ? AND timestamp BETWEEN ? AND ? UNION ALL SELECT timestamp, close FROM NewDailyStock WHERE symbol = ? AND timestamp BETWEEN ? AND ? ORDER BY timestamp
 
+Check if a stock's record already exists in the historical data for a specific symbol and timestamp to prevent user from overwriting it:
+
 SELECT 1 FROM DailyStock WHERE symbol = ? AND timestamp = ?
+
+Insert new user-added daily stock data into the table, or update existing (user-added) records if the same symbol and timestamp already exist in the table:
 
 INSERT INTO NewDailyStock (symbol, timestamp, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO UPDATE SET (open, high, low, close, volume) = (?, ?, ?, ?, ?)
 
