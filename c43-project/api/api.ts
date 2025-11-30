@@ -169,7 +169,7 @@ export function logStock(open: number, high: number, low: number, close: number,
     return send("POST", `/stock/?open=${open}&high=${high}&low=${low}&close=${close}&volume=${volume}&symbol=${symbol}`);
 }
 
-export function getHistory(symbol: string, start_date: Date, end_date: Date) {
+export function getHistory(symbol: string, start_date: string, end_date: string) {
     return send("GET", `/stock/history/?symbol=${symbol}&start_date=${start_date}&end_date=${end_date}`);
 }
 

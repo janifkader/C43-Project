@@ -78,13 +78,13 @@ function Home() {
 		router.push("/");
 	}
 
-	const handlePortfolioPage = function(port_id: Portfolio) {
-		localStorage.setItem("port_id", port_id);
+	const handlePortfolioPage = function(port_id: number) {
+		localStorage.setItem("port_id", port_id.toString());
 		router.push("/portfolio");
 	}
 
-	const handleSLPage = function(sl_id: StockList) {
-		localStorage.setItem("sl_id", sl_id);
+	const handleSLPage = function(sl_id: number) {
+		localStorage.setItem("sl_id", sl_id.toString());
 		router.push("/stocklist");
 	}
 
@@ -142,7 +142,7 @@ function Home() {
 	const router = useRouter();
 
 	const handlePortfolio = async function (cash_amt: number) {
-		const user_id = localStorage.getItem("user_id");
+		const user_id = Number(localStorage.getItem("user_id")) || 0;
 		let port_id = await createPortfolio(0, user_id, cash_amt);
 		const refreshPorts = await getPortfolios(user_id);
 		setPortfolios(refreshPorts);
@@ -150,7 +150,7 @@ function Home() {
 	}
 
 	const handleStockList = async function (visibility: string) {
-		const user_id = localStorage.getItem("user_id");
+		const user_id = Number(localStorage.getItem("user_id")) || 0;
 		let sl_id = await createStockList(0, user_id, visibility);
 		const refreshSls = await getStockLists(user_id);
 		setStockLists(refreshSls);
@@ -196,7 +196,7 @@ function Home() {
 
 	  useEffect(function () {
 	    async function load() {
-	    	const user_id = localStorage.getItem("user_id");
+	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
 	      const result = await getPortfolios(user_id);
 	      setPortfolios(result);
 	      setPortTotal(result.length);
@@ -208,7 +208,6 @@ function Home() {
 	      setSharedTotal(sharedResult.length);
 	      const uName = await getUser(user_id);
 	      setUsername(uName);
-	      console.log("ME" + username);
 	    }
 	    load();
 	  }, []);
@@ -295,7 +294,7 @@ function Home() {
 		      <List
 		        rowHeight={46}
 		        rowCount={portTotal}
-		        style={{ portHeight, width: 360 }}
+		        style={{ height: portHeight, width: 360 }}
 		        rowProps={{ portfolios }}
 		        overscanCount={5}
 		        rowComponent={PortRow}
@@ -307,7 +306,7 @@ function Home() {
 		      <List
 		        rowHeight={46}
 		        rowCount={slTotal}
-		        style={{ slHeight, width: 360 }}
+		        style={{ height: slHeight, width: 360 }}
 		        rowProps={{ stockLists }}
 		        overscanCount={5}
 		        rowComponent={SLRow}
@@ -322,7 +321,7 @@ function Home() {
 		      <List
 		        rowHeight={46}
 		        rowCount={sharedTotal}
-		        style={{ sharedHeight, width: 360 }}
+		        style={{ height: sharedHeight, width: 360 }}
 		        rowProps={{ shared }}
 		        overscanCount={5}
 		        rowComponent={SharedRow}

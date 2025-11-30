@@ -221,7 +221,6 @@ public class PortfolioRepo {
 	    else {
 	    	sql = "DELETE FROM stock_holdings WHERE port_id = ? AND symbol = ?;";
 	    }
-	    System.out.println(sql);
 	    String sql2 = "UPDATE Portfolio SET cash_amt = cash_amt + ? WHERE port_id = ? RETURNING port_id;";
 
 	    Connection conn = null;

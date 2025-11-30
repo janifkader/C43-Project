@@ -67,12 +67,6 @@ function Transaction () {
 
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [transactionsTotal, setTransactionsTotal] = useState(0);
-	const [currentUser, setCurrentUser] = useState("");
-	const [open, setOpen] = useState(false);
-	const [stocklist, setStocklist] = useState<StockList[]>([]);
-	const [currentReview, setCurrentReview] = useState<Review | null>(null);
-	const [edit, setEdit] = useState(false);
-	const reviewRef = useRef<HTMLInputElement>(null);
 	const editRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
 
@@ -97,7 +91,7 @@ function Transaction () {
 
 	useEffect(function () {
 	    async function load() {
-	    	const port_id = localStorage.getItem("port_id")
+	    	const port_id = Number(localStorage.getItem("port_id")) || 0;
 	    	const result = await getTransactions(port_id);
 	      setTransactions(result);
 	      setTransactionsTotal(result.length);

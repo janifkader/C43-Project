@@ -66,9 +66,9 @@ function Review({ onClose }: { onClose: () => void }) {
 
 	const [reviews, setReviews] = useState<Review[]>([]);
 	const [reviewsTotal, setReviewsTotal] = useState(0);
-	const [currentUser, setCurrentUser] = useState("");
+	const [currentUser, setCurrentUser] = useState(0);
 	const [open, setOpen] = useState(false);
-	const [stocklist, setStocklist] = useState<StockList[]>([]);
+	const [stocklist, setStocklist] = useState<StockList | null>(null);
 	const [currentReview, setCurrentReview] = useState<Review | null>(null);
 	const [edit, setEdit] = useState(false);
 	const reviewRef = useRef<HTMLInputElement>(null);
@@ -91,8 +91,8 @@ function Review({ onClose }: { onClose: () => void }) {
 	}
 
 	const handleReview = async function (text: string) {
-		const sl = localStorage.getItem("sl_id");
-		const uid = localStorage.getItem("user_id");
+		const sl = Number(localStorage.getItem("sl_id")) || 0;
+		const uid = Number(localStorage.getItem("user_id")) || 0;
 		await writeReview(0, uid, sl, text, "");
 		const update = await getReviews(sl);
 		setReviews(update);
@@ -122,6 +122,7 @@ function Review({ onClose }: { onClose: () => void }) {
 	}
 
 	const handleEditReview = async function (text: string) {
+		if (!currentReview || !stocklist) return;
 		const rev = currentReview;
 		rev.text = text;
 		setCurrentReview(rev);
@@ -134,12 +135,15 @@ function Review({ onClose }: { onClose: () => void }) {
 	const handleEdit = function (review: Review) {
 		setEdit(true);
 		setTimeout(() => {
-      editRef.current.value = review.text;
+      if (editRef.current) {
+      	editRef.current.value = review.text;
+      }
 			setCurrentReview(review);
     }, 0);
 	}
 
 	const handleDelete = async function (review_id: number, user_id: number) {
+		if (!stocklist) return;
 		await deleteReview(review_id, user_id);
 		const update = await getReviews(stocklist.sl_id);
 		setReviews(update);
@@ -171,7 +175,7 @@ function Review({ onClose }: { onClose: () => void }) {
 		    </ListItem>
 	  	);
 	  }
-	  else if (currentUser == stocklist.user_id){
+	  else if (currentUser == stocklist?.user_id){
 	  	return (
 		    <ListItem style={style} key={index} component="div" sx={{
 	                borderBottom: "5px solid #8FCAFA",
@@ -214,8 +218,8 @@ function Review({ onClose }: { onClose: () => void }) {
 
 	useEffect(function () {
 	    async function load() {
-	    	const user_id = localStorage.getItem("user_id");
-	    	const sl_id = localStorage.getItem("sl_id");
+	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
+	    	const sl_id = Number(localStorage.getItem("sl_id")) || 0;
 	      const result = await getReviews(sl_id);
 	      const sl = await getStockList(sl_id);
 	      setStocklist(sl);

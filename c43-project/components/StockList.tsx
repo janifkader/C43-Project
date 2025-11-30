@@ -73,17 +73,17 @@ interface Stock {
 }
 
 interface FriendRequest {
-	request_id: Number;
-	sender_id: Number;
-	receiver_id: Number;
-	username: String
-	status: String;
+	request_id: number;
+	sender_id: number;
+	receiver_id: number;
+	username: string
+	status: string;
 	last_updated: Date;
 }
 
 
 function StockList() {
-	const [stocklist, setStocklist] = useState<StockList[]>([]);
+	const [stocklist, setStocklist] = useState<StockList | null>(null);
 	const [currentUser, setCurrentUser] = useState(0);
 	const [stockTotal, setStockTotal] = useState(0);
 	const [stocks, setStocks] = useState<Stock[]>([]);
@@ -121,6 +121,7 @@ function StockList() {
 	}
 
 	const handleVisibility = async function (newVisibility: string) {
+		if (!stocklist) return;
 		const vis = await updateStockListVisibility(stocklist.sl_id, newVisibility);
 		if (vis != -1) {
 			setDialogText("Successfully changed stock list visibility!");
@@ -153,7 +154,8 @@ function StockList() {
 		setInvalid(true);
 	}
 
-	const handleShare = async function (user_id: string) {
+	const handleShare = async function (user_id: number) {
+		if (!stocklist) return;
 		const share = await shareStockList(stocklist.sl_id, user_id);
 		handleClose();
 		if (share != -1){
@@ -165,7 +167,8 @@ function StockList() {
 		handleInvalidOpen();
 	}
 
-	const handleUnshare = async function (user_id: string) {
+	const handleUnshare = async function (user_id: number) {
+		if (!stocklist) return;
 		const share = await unshareStockList(stocklist.sl_id, user_id);
 		handleCloseUnshare();
 		if (share != -1){
@@ -203,7 +206,7 @@ function StockList() {
   }
 
   const handleDelete = async function() {
-  	const sl_id = localStorage.getItem("sl_id");
+  	const sl_id = Number(localStorage.getItem("sl_id")) || 0;
   	const del = await deleteStockList(sl_id);
   	if (del == -1){
 			setDialogText("There was an error trying to delete the Stock List.");
@@ -215,6 +218,7 @@ function StockList() {
   }
 
   const handleDeleteStock = async function(symbol: string) {
+  	if (!stocklist) return;
   	const sl_id = stocklist.sl_id;
   	await deleteStockListStock(sl_id, symbol);
   	const refresh = await getStockListStocks(sl_id);
@@ -225,7 +229,7 @@ function StockList() {
   const handleInsertSubmit = function (e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const shares = sharesRef.current?.value || 0;
+    const shares = Number(sharesRef.current?.value) || 0;
     handleInsertStock(dialogSymbol, shares);
     handleCloseInsert();
   };
@@ -245,6 +249,7 @@ function StockList() {
   };
 
   const handleInsertStock = async function (symbol: string, num_of_shares: number) {
+  	if (!stocklist) return;
   	const insert = await insertSLStock(stocklist.sl_id, symbol, num_of_shares);
   	const refresh = await getStockListStocks(stocklist.sl_id);
   	setStocks(refresh);
@@ -255,8 +260,8 @@ function StockList() {
 	function SLRow({ index, stocks, style }: RowComponentProps<{ stocks: Stock[] }>) {
 	  const s = stocks[index];
 	  const text = s.symbol + ": " + s.num_of_shares + " shares";
-	  const user = localStorage.getItem("user_id");
-	  if (stocklist.user_id == user){
+	  const user = Number(localStorage.getItem("user_id")) || 0;
+	  if (stocklist?.user_id == user){
 		  return (
 		    <ListItem style={style} key={index} component="div" secondaryAction={
 	              <IconButton edge="end" onClick={() => handleDeleteStock(s.symbol)} >
@@ -286,7 +291,7 @@ function StockList() {
 		}
 	}
 
-	function StockRow({ index, allStocks, style }: RowComponentProps<{ stocks: string[] }>) {
+	function StockRow({ index, allStocks, style }: RowComponentProps<{ allStocks: string[] }>) {
 	  const text = allStocks[index];
 		  return (
 		    <ListItem style={style} key={index} component="div" >
@@ -323,7 +328,8 @@ function StockList() {
 
 	useEffect(() => {
 		const fetchSl = async function () {
-			const sl = await getStockList(localStorage.getItem("sl_id"));
+			const sl_id = Number(localStorage.getItem("sl_id")) || 0;
+			const sl = await getStockList(sl_id);
 	    	setStocklist(sl);
 		}
 		fetchSl();
@@ -331,8 +337,8 @@ function StockList() {
 
 	useEffect(function () {
 	    async function load() {
-	    	const sl_id = localStorage.getItem("sl_id");
-	    	const user_id = localStorage.getItem("user_id");
+	    	const sl_id = Number(localStorage.getItem("sl_id")) || 0;
+	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
 	    	setCurrentUser(user_id);
 	      const result = await getStockListStocks(sl_id);
 	      setStocks(result);
@@ -413,7 +419,7 @@ function StockList() {
 			      <List
 			        rowHeight={46}
 			        rowCount={friendsTotal}
-			        style={{ friendsHeight, width: 360 }}
+			        style={{ height: friendsHeight, width: 360 }}
 			        rowProps={{ friends }}
 			        overscanCount={5}
 			        rowComponent={FriendRow}
@@ -445,7 +451,7 @@ function StockList() {
 			      <List
 			        rowHeight={46}
 			        rowCount={friendsTotal}
-			        style={{ friendsHeight, width: 360 }}
+			        style={{ height: friendsHeight, width: 360 }}
 			        rowProps={{ friends }}
 			        overscanCount={5}
 			        rowComponent={UnshareRow}
@@ -532,7 +538,7 @@ function StockList() {
 		      sx={{ minHeight: '100vh', pb: 5 }}
 		    >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Stock List"}</Title></Grid>
-			{ (currentUser == stocklist.user_id) ?
+			{ (currentUser == stocklist?.user_id) ?
 			(<>
 				<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Stocks"}</Subtitle></Grid>
 				<Grid size={6} display="flex" justifyContent="center">
@@ -544,7 +550,7 @@ function StockList() {
 		      <List
 		        rowHeight={46}
 		        rowCount={stockTotal}
-		        style={{ slHeight, width: 360 }}
+		        style={{ height: slHeight, width: 360 }}
 		        rowProps={{ stocks }}
 		        overscanCount={5}
 		        rowComponent={SLRow}
@@ -556,7 +562,7 @@ function StockList() {
 		      <List
 		        rowHeight={46}
 		        rowCount={allStocksTotal}
-		        style={{ stockHeight, width: 360 }}
+		        style={{ height: stockHeight, width: 360 }}
 		        rowProps={{ allStocks }}
 		        overscanCount={5}
 		        rowComponent={StockRow}
@@ -571,14 +577,14 @@ function StockList() {
 		      <List
 		        rowHeight={46}
 		        rowCount={stockTotal}
-		        style={{ slHeight, width: 360 }}
+		        style={{ height: slHeight, width: 360 }}
 		        rowProps={{ stocks }}
 		        overscanCount={5}
 		        rowComponent={SLRow}
 		      />
 		    </Box>
 		  </Grid></>)}
-			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist.visibility}</Subtitle></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist?.visibility}</Subtitle></Grid>
 			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleOpenReviews}>View Reviews</Button></Grid>
 			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpen}>Share Stock List</Button></Grid>
 			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpenUnshare}>Unshare Stock List</Button></Grid>

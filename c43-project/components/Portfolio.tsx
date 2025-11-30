@@ -83,7 +83,7 @@ interface Dailystock {
 
 
 function Portfolio() {
-	const [portfolio, setPortfolio] = useState<Portfolio[]>([]);
+	const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
 	const [stockTotal, setStockTotal] = useState(0);
 	const [stocks, setStocks] = useState<Stock[]>([]);
 	const [symbol, setSymbol] = useState('');
@@ -125,14 +125,14 @@ function Portfolio() {
 	const handleSubmitSell = async function (e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const num = sellRef.current?.value || 0;
+    const num = Number(sellRef.current?.value) || 0;
     let mult = price*num;
     mult = Number(mult.toFixed(2))
-    const s = await sellPortfolioStock(portfolio.port_id, symbol, num, mult);
+    const s = await sellPortfolioStock(portfolio?.port_id || 0, symbol, num, mult);
     if (s != -1) {
     	setDialogText(num + " shares of " + symbol + " were sold for $" + mult + "!");
-    	const update = getPortfolioStocks(portfolio.port_id);
-    	await addTransaction(0, symbol, portfolio.port_id, "SELL", num, mult, new Date());
+    	const update = await getPortfolioStocks(portfolio?.port_id || 0);
+    	await addTransaction(0, symbol, portfolio?.port_id || 0, "SELL", num, mult, new Date());
     	setStocks(update);
     	setStockTotal(update.length);
     	setPortfolio(prev => {
@@ -177,14 +177,15 @@ function Portfolio() {
 	const handleSubmit = function (e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const cash = cashAmtRef.current?.value || 0;
+    const cash = Number(cashAmtRef.current?.value) || 0;
     addCash(cash);
     handleClose();
 	}
 
 	const addCash = async function (cash: number) {
-		portfolio.cash_amt = Number(portfolio.cash_amt) + Number(cash);
-		const up = await updatePortfolio(portfolio.port_id, portfolio.user_id, portfolio.cash_amt);
+		if (!portfolio) return;
+		portfolio.cash_amt = Number(portfolio?.cash_amt || 0) + Number(cash);
+		const up = await updatePortfolio(portfolio?.port_id || 0, portfolio?.user_id || 0, portfolio?.cash_amt || 0);
 		if (up != -1){
 			setDialogText("Portfolio successfully updated!");
 		}
@@ -236,19 +237,21 @@ function Portfolio() {
 	const handleInsertSubmit = function (e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const shares = sharesRef.current?.value || 0;
+    const shares = Number(sharesRef.current?.value) || 0;
     handleInsertStock(dialogSymbol, shares);
     handleCloseInsert();
   };
 
   const handleInsertStock = async function (symbol: string, num_of_shares: number) {
+  	if (!portfolio) return;
   	if (price*num_of_shares < portfolio.cash_amt) {
-	  	const insert = await insertPortfolioStock(portfolio.port_id, symbol, num_of_shares);
-	  	const refresh = await getPortfolioStocks(portfolio.port_id);
-	  	const refreshPrices = await getPortfolioPrices(portfolio.port_id);
+	  	const insert = await insertPortfolioStock(portfolio?.port_id, symbol, num_of_shares);
+	  	const refresh = await getPortfolioStocks(portfolio?.port_id);
+	  	const refreshPrices = await getPortfolioPrices(portfolio?.port_id);
 	  	const diff = portfolio.cash_amt - price*num_of_shares;
-	  	portfolio.cash_amt = Number(diff.toFixed(2))
-	  	await updatePortfolio(portfolio.port_id, portfolio.user_id, portfolio.cash_amt);
+	  	const money = Number(diff.toFixed(2));
+	  	portfolio.cash_amt = money
+	  	await updatePortfolio(portfolio.port_id, portfolio.user_id, money);
 	  	await addTransaction(0, symbol, portfolio.port_id, "BUY", num_of_shares, price, new Date());
 	  	setStocks(refresh);
 	  	setStockTotal(refresh.length);
@@ -325,11 +328,11 @@ function Portfolio() {
   	const text = h.symbol + ": " + h.num_of_shares + " shares: " + priceDisplay;
 	  return (
 	    <ListItem style={style} key={index} component="div" secondaryAction={
-	              <Button edge="end" onClick={() => handleSellStock(h.symbol, h.num_of_shares)} >
+	              <Button onClick={() => handleSellStock(h.symbol, h.num_of_shares)} >
 	                SELL
 	              </Button>
 	            }>
-	        <Button edge="end" onClick={() => handlePredict(h.symbol)} >
+	        <Button onClick={() => handlePredict(h.symbol)} >
 	           PREDICT
 	         </Button>
 	       <ListItemButton onClick={() => handleOpenTime(h.symbol)}>
@@ -344,7 +347,7 @@ function Portfolio() {
 	  );
 	}
 
-  function StockRow({ index, allStocks, style }: RowComponentProps<{ stocks: string[] }>) {
+  function StockRow({ index, allStocks, style }: RowComponentProps<{ allStocks: string[] }>) {
 	  const text = allStocks[index];
 	  return (
 	    <ListItem style={style} key={index} component="div" disablePadding>
@@ -357,7 +360,8 @@ function Portfolio() {
 
 	useEffect(() => {
 		const fetchPort = async function () {
-			const p = await getPortfolio(localStorage.getItem("port_id"));
+			const port_id = Number(localStorage.getItem("port_id")) || 0;
+			const p = await getPortfolio(port_id);
 	    	setPortfolio(p);
 		}
 		fetchPort();
@@ -365,7 +369,7 @@ function Portfolio() {
 
 	useEffect(function () {
 	    async function load() {
-	    	const port_id = localStorage.getItem("port_id");
+	    	const port_id = Number(localStorage.getItem("port_id")) || 0;
 	      const result = await getPortfolioStocks(port_id);
 	      setStocks(result);
 	      setStockTotal(result.length);
@@ -376,13 +380,17 @@ function Portfolio() {
 	  }, []);
 
 	useEffect(function () {
-			let tot = 0
-			for (let i = 0; i < stockTotal; i++){
-				const h = stocks[i];
-				let priceData = allPrices.find((p: any) => p.symbol === h.symbol);
-				tot = Number((tot + h.num_of_shares*priceData?.close).toFixed(2));
+			if (allPrices) {
+				let tot = 0
+				for (let i = 0; i < stockTotal; i++){
+					const h = stocks[i];
+					let priceData = allPrices.find((p: any) => p.symbol === h.symbol);
+					if (priceData) {
+						tot = Number((tot + h.num_of_shares*priceData?.close).toFixed(2));
+					}
+				}
+				setTotal(tot);
 			}
-			setTotal(tot);
 
 	  }, [allPrices, stocks]);
 
@@ -439,7 +447,7 @@ function Portfolio() {
           <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
           	{"How many shares would you like to sell (Price per Share: $" + price + ")"}
           </DialogContentText>
-          <NumberField sx={{ color: "#FFFFFF" }}label="" min={1} max={shares} inputRef={sellRef}/>
+          <NumberField label="" min={1} max={shares} inputRef={sellRef}/>
         </DialogContent>
         <DialogActions>
           <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleCloseSell}>Cancel</Button>
@@ -566,7 +574,7 @@ function Portfolio() {
 		      sx={{ minHeight: '100vh', pb: 5 }}
 		    >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio"}</Title></Grid>
-			<Grid size={12} display="flex" justifyContent="center" sx={{ gap: 4 }}><Subtitle>{"Cash Amount: $" + portfolio.cash_amt}</Subtitle><Button onClick={handleOpen}>Add Cash</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center" sx={{ gap: 4 }}><Subtitle>{"Cash Amount: $" + portfolio?.cash_amt || 0}</Subtitle><Button onClick={handleOpen}>Add Cash</Button></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Current Holdings"}</Subtitle></Grid>
 			<Grid size={6} display="flex" justifyContent="center">
         <Subtitle>{"Buy a Stock"}</Subtitle>

@@ -65,7 +65,6 @@ function Login() {
       response = await signup(0, username, password);
     }
     if (response && response != -1){
-      console.log(response);
       localStorage.setItem("user_id", response);
       if (action === "signup") {
         await createPortfolio(0, response, 0);

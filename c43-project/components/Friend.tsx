@@ -36,18 +36,18 @@ const Subtitle = styled(Typography)(({ theme }) => ({
 }));
 
 interface FriendRequest {
-	request_id: Number;
-	sender_id: Number;
-	receiver_id: Number;
-	username: String
-	status: String;
+	request_id: number;
+	sender_id: number;
+	receiver_id: number;
+	username: string
+	status: string;
 	last_updated: Date;
 }
 
 interface User {
-	user_id: Number;
-	username: String;
-	password: Strign;
+	user_id: number;
+	username: string;
+	password: string;
 }
 
 function Friend() {
@@ -82,7 +82,7 @@ function Friend() {
 	}
 
 	const handleSend = async function (receiver_id: number) {
-		const user_id = localStorage.getItem("user_id");
+		const user_id = Number(localStorage.getItem("user_id")) || 0;
 		const ret = await sendFriendRequest(user_id, receiver_id);
 		if (ret == -1) {
 			setInvalid(true);
@@ -97,7 +97,7 @@ function Friend() {
 
 	const handleAccept = async function (request_id: number) {
 		await acceptFriendRequest(request_id);
-		const user_id = localStorage.getItem("user_id");
+		const user_id = Number(localStorage.getItem("user_id")) || 0;
 		const update = await getFriends(user_id);
 		setFriends(update);
 		setFriendsTotal(update.length);
@@ -108,14 +108,14 @@ function Friend() {
 
 	const handleReject = async function (request_id: number) {
 		await rejectFriendRequest(request_id);
-		const user_id = localStorage.getItem("user_id");
+		const user_id = Number(localStorage.getItem("user_id")) || 0;
 		const rUpdate = await getIncomingRequests(user_id);
 	  setRequests(rUpdate);
 	  setRequestsTotal(rUpdate.length);
 	}
 
 	const handleUnsend = async function (request_id: number) {
-		const user_id = localStorage.getItem("user_id");
+		const user_id = Number(localStorage.getItem("user_id")) || 0;
 		await unsendFriendRequest(request_id, user_id);
 		const sUpdate = await getOutgoingRequests(user_id);
 	  setSent(sUpdate);
@@ -123,7 +123,7 @@ function Friend() {
 	}
 
 	const handleRemove = async function (request_id: number) {
-		const user_id = localStorage.getItem("user_id");
+		const user_id = Number(localStorage.getItem("user_id")) || 0;
 		await removeFriend(request_id, user_id);
 		const update = await getFriends(user_id);
 		setFriends(update);
@@ -201,7 +201,7 @@ function Friend() {
 
 	  useEffect(function () {
 	    async function load() {
-	    	const user_id = localStorage.getItem("user_id");
+	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
 	      const result = await getFriends(user_id);
 	      setFriends(result);
 	      setFriendsTotal(result.length);
@@ -263,7 +263,7 @@ function Friend() {
 			      <List
 			        rowHeight={46}
 			        rowCount={usersTotal}
-			        style={{ usersHeight, width: 360 }}
+			        style={{ height: usersHeight, width: 360 }}
 			        rowProps={{ users }}
 			        overscanCount={5}
 			        rowComponent={UserRow}
@@ -291,7 +291,7 @@ function Friend() {
 		      <List
 		        rowHeight={46}
 		        rowCount={friendsTotal}
-		        style={{ friendsHeight, width: 360 }}
+		        style={{ height: friendsHeight, width: 360 }}
 		        rowProps={{ friends }}
 		        overscanCount={5}
 		        rowComponent={FriendRow}
@@ -303,7 +303,7 @@ function Friend() {
 		      <List
 		        rowHeight={getSentItemSize}
 		        rowCount={sentTotal}
-		        style={{ sentHeight, width: 360 }}
+		        style={{ height: sentHeight, width: 360 }}
 		        rowProps={{ sent }}
 		        overscanCount={5}
 		        rowComponent={SentRow}
@@ -315,7 +315,7 @@ function Friend() {
 		      <List
 		        rowHeight={getReqItemSize}
 		        rowCount={requestsTotal}
-		        style={{ requestsHeight, width: 360 }}
+		        style={{ height: requestsHeight, width: 360 }}
 		        rowProps={{ requests }}
 		        overscanCount={5}
 		        rowComponent={RequestRow}
