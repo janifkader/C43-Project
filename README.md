@@ -151,27 +151,52 @@ UPDATE Review SET text = ? WHERE review_id = ? AND user_id = ?
 
 ## FriendRequest:
 
+
+Get the most recent rejected, removed, or cancelled friend request between two users to determine if enough time (5 mins) has passed for resending another request:
+
 SELECT last_updated, status FROM FriendRequest WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status IN ('REJECTED', 'REMOVED', 'CANCELLED') ORDER BY last_updated DESC LIMIT 1
+
+Check if the a friend request betwwen two users is already sent, or if two users are already freinds to avoid duplicate friend requests.
 
 SELECT request_id, status FROM FriendRequest WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status IN ('ACCEPTED', 'PENDING')
 
+Check if the most latest status is rejected, removed, or cancelled friend request so that we can update it to pending instead of crreating a new request between the same two users:
+
 SELECT request_id FROM FriendRequest WHERE ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) AND status IN ('REJECTED', 'REMOVED', 'CANCELLED') ORDER BY last_updated DESC LIMIT 1
+
+Update an old friend request by changing its status to pending and updating the last updated timestamp:
 
 UPDATE FriendRequest SET status = 'PENDING', last_updated = ? WHERE request_id = ?
 
+Create a totally new friend request with pending status and current timestamp:
+
 INSERT INTO FriendRequest (sender_id, receiver_id, status, last_updated) VALUES (?, ?, 'PENDING', ?)
+
+Get all incoming friend requests for a user, by joining FriendRequest table with the Users table, to get the sender's information as well:
 
 SELECT U.username, U.user_id AS id, Fr.* FROM FriendRequest Fr JOIN Users U ON Fr.sender_id = U.user_id WHERE Fr.receiver_id = ? AND Fr.status = 'PENDING'
 
+Get all outgoing friend requests for a user that are not already accepted/rejected/removed by the receiver, by joining FriendRequest table with Users table, to get the receiver's information:
+
 SELECT U.username, U.user_id AS id, Fr.* FROM FriendRequest Fr JOIN Users U ON Fr.receiver_id = U.user_id WHERE Fr.sender_id = ? AND Fr.status != 'CANCELLED' AND Fr.status != 'ACCEPTED' AND Fr.status != 'REMOVED'
+
+Accept friend request by updating its status and timestamp:
 
 UPDATE FriendRequest SET status = 'ACCEPTED', last_updated = ? WHERE request_id = ?
 
+Reject friend request by updating its status and timestamp:
+
 UPDATE FriendRequest SET status = 'REJECTED', last_updated = ? WHERE request_id = ?
+
+Remove a friend by updating its status and timestamp, and make sure the user was priviously a freind (can't remove if not a friend):
 
 UPDATE FriendRequest SET status = 'REMOVED', last_updated = ? WHERE request_id = ? AND (sender_id = ? OR receiver_id = ?) AND status = 'ACCEPTED'
 
+Cancel a sent friend request by updating its status and timestamp, and make sure the user is the sender and the request is in pending state:
+
 UPDATE FriendRequest SET status = 'CANCELLED', last_updated = ? WHERE request_id = ? AND sender_id = ? AND status = 'PENDING' OR status = 'REJECTED'
+
+Get all friends of a user by finding the currently accepted friend requests and joining with Users table to get friend's details, make sure the user themself is not shown in their friends list:
 
 SELECT U.username, U.user_id AS friend_id, fr.* FROM FriendRequest fr JOIN Users U ON (fr.sender_id = U.user_id OR fr.receiver_id = U.user_id) WHERE (fr.sender_id = ? OR fr.receiver_id = ?) AND fr.status = 'ACCEPTED' AND U.user_id != ?
 
@@ -196,4 +221,5 @@ SELECT 1 FROM DailyStock WHERE symbol = ? AND timestamp = ?
 Insert new user-added daily stock data into the table, or update existing (user-added) records if the same symbol and timestamp already exist in the table:
 
 INSERT INTO NewDailyStock (symbol, timestamp, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO UPDATE SET (open, high, low, close, volume) = (?, ?, ?, ?, ?)
+
 
