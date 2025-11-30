@@ -125,7 +125,7 @@ public class StockRepo {
             pstmt.setString(1, symbol);
             pstmt.setDate(2, timestamp);
             rs = pstmt.executeQuery();
-            if (rs.next()) {return false;} // user added data already exists in historical data, can't modify.
+            if (rs.next()) {return false;}
             rs.close();
             pstmt.close();
             
