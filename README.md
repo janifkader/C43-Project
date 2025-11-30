@@ -225,4 +225,5 @@ INSERT INTO NewDailyStock (symbol, timestamp, open, high, low, close, volume) VA
 
 Optimized Interface: As explained in the demonstration, we have implemented all necessary UI for our app. The UI is minimal, but yet complete with full functionality for all features. The frontend is written in TypeScript/React and makes use of Material UI styled components. Each major entity has its own component and page. The simple and functional interface allows the user to have a clean experience while browsing their portfolios.
 
+Optimized Query Performance: We improved database performance by adding smart indexes on frequently searched columns and optimizing our SQL queries to reduce loading times, making features like friend requests and portfolio views faster for users.
 
