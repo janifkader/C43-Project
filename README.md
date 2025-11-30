@@ -13,10 +13,6 @@ Frontend should now be running on http://localhost:3000
 9. Run ```java -jar target/portfolio_manager-0.0.1-SNAPSHOT.jar```
 Backend should now be running on http://localhost:8080
 
-# Frontend:
-
-The frontend is written in TypeScript React and makes use of Material UI styled components. Each major entity has its own component and page. The simple and functional interface allows the user to have a clean experience while browsing their portfolios.
-
 # Calculation of Stock Price:
 
 The stock price is calculated using an external open-source API called Finnhub to get the latest close price, the information from this API also facilitates the new daily stock record. If the price cannot be retrieved from the api, we fall back on a getCurrentPrice function to handle it manually.
@@ -227,5 +223,6 @@ INSERT INTO NewDailyStock (symbol, timestamp, open, high, low, close, volume) VA
 
 # Appendix
 
-Optimized Interface: As explained in the demonstration, we have implemented all necessary UI for our app. The UI is minimal, but yet complete with full functionality for all features.
+Optimized Interface: As explained in the demonstration, we have implemented all necessary UI for our app. The UI is minimal, but yet complete with full functionality for all features. The frontend is written in TypeScript/React and makes use of Material UI styled components. Each major entity has its own component and page. The simple and functional interface allows the user to have a clean experience while browsing their portfolios.
+
 
