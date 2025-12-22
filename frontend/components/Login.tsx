@@ -65,9 +65,8 @@ function Login() {
       response = await signup(0, username, password);
     }
     if (response && response != -1){
-      localStorage.setItem("user_id", response);
       if (action === "signup") {
-        await createPortfolio(0, response, 0);
+        await createPortfolio(0, 0);
       }
       router.push("/home");
     }
@@ -105,8 +104,8 @@ function Login() {
       <LoginField label="Username" inputRef={usernameRef} />
       <LoginField label="Password" type="password" inputRef={passwordRef} />
 
-      <Button type="submit" value="signin" sx={{ color: "#2798F5" }}>Login</Button>
-      <Button type="submit" value="signup" sx={{ color: "#2798F5" }}>Register</Button>
+      <Button type="submit" value="signin" sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }}>Login</Button>
+      <Button type="submit" value="signup" sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }}>Register</Button>
     </Box>
     </>
   );

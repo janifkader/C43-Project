@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.c43.portfolio_manager.model.StockList;
+import com.c43.portfolio_manager.model.User;
 import com.c43.portfolio_manager.model.SharedStockList;
 import com.c43.portfolio_manager.model.Stock;
 import com.c43.portfolio_manager.repository.StockListRepo;
@@ -61,5 +62,9 @@ public class StockListService {
 	
 	public int unshare(int sl_id, int user_id) {
 		return repo.unshareStockList(sl_id, user_id);
+	}
+	
+	public List<User> getShared(int sl_id) {
+		return repo.getSharedWith(sl_id);
 	}
 }

@@ -16,36 +16,40 @@ export function signin(user_id: number, username: string, password: string) {
     return send("POST", `/user/login/`, {user_id, username, password});
 }
 
+export function signout(user_id: number, username: string, password: string) {
+    return send("POST", `/user/logout/`);
+}
+
 export function getUsers() {
     return send("GET", `/user/users/`);
 }
 
-export function getUser(user_id: number) {
-    return send("GET", `/user/${user_id}`);
+export function getUser() {
+    return send("GET", `/user/`);
 }
 
-export function createPortfolio(port_id: number, user_id: number, cash_amt: number) {
-    return send("POST", `/portfolio/`, {port_id, user_id, cash_amt});
+export function createPortfolio(port_id: number, cash_amt: number) {
+    return send("POST", `/portfolio/`, {port_id, cash_amt});
 }
 
-export function getPortfolios(user_id: number) {
-    return send("GET", `/portfolio/?user_id=${user_id}`);
+export function getPortfolios() {
+    return send("GET", `/portfolio/`);
 }
 
 export function getPortfolio(port_id: number) {
     return send("GET", `/portfolio/${port_id}`);
 }
 
-export function updatePortfolio(port_id: number, user_id: number, cash_amt: number) {
-    return send("PUT", `/portfolio/`, {port_id, user_id, cash_amt})
+export function updatePortfolio(port_id: number, cash_amt: number) {
+    return send("PUT", `/portfolio/`, {port_id, cash_amt})
 }
 
-export function createStockList(sl_id: number, user_id: number, visibility: string) {
-    return send("POST", `/stocklist/`, {sl_id, user_id, visibility});
+export function createStockList(sl_id: number, visibility: string) {
+    return send("POST", `/stocklist/`, {sl_id, visibility});
 }
 
-export function getStockLists(user_id: number) {
-    return send("GET", `/stocklist/?user_id=${user_id}`);
+export function getStockLists() {
+    return send("GET", `/stocklist/`);
 }
 
 export function getStockList(sl_id: number) {
@@ -61,8 +65,12 @@ export function unshareStockList(sl_id: number, user_id: number) {
 }
 
 
-export function getSharedStockLists(user_id: number) {
-    return send("GET", `/stocklist/shared/?user_id=${user_id}`);
+export function getSharedStockLists() {
+    return send("GET", `/stocklist/shared/`);
+}
+
+export function getSharedTo(sl_id: number) {
+    return send("GET", `/stocklist/shared/${sl_id}/`);
 }
 
 export function updateStockListVisibility(sl_id: number, visibility: string) {
@@ -117,40 +125,40 @@ export function getTransactions(port_id: number) {
     return send("GET", `/transaction/${port_id}`);
 }
 
-export function writeReview(review_id: number, user_id: number, sl_id: number, text: string, username: string) {
-    return send("POST", `/reviews/`, {review_id, user_id, sl_id, text, username});
+export function writeReview(review_id: number, sl_id: number, text: string, username: string) {
+    return send("POST", `/reviews/`, {review_id, sl_id, text, username});
 }
 
 export function getReviews(sl_id: number) {
     return send("GET", `/reviews/?sl_id=${sl_id}`);
 }
 
-export function deleteReview(review_id: number, user_id: number) {
-    return send("DELETE", `/reviews/?review_id=${review_id}&user_id=${user_id}`);
+export function deleteReview(review_id: number) {
+    return send("DELETE", `/reviews/?review_id=${review_id}`);
 }
 
-export function editReview(review_id: number, user_id: number, text: string) {
-    return send("PUT", `/reviews/?review_id=${review_id}&user_id=${user_id}&text=${text}`);
+export function editReview(review_id: number, text: string) {
+    return send("PUT", `/reviews/?review_id=${review_id}&text=${text}`);
 }
 
-export function getFriends(user_id: number) {
-    return send("GET", `/friends/?user_id=${user_id}`);
+export function getFriends() {
+    return send("GET", `/friends/`);
 }
 
-export function removeFriend(request_id: number, user_id: number) {
-    return send("POST", `/friends/remove/?request_id=${request_id}&user_id=${user_id}`);
+export function removeFriend(request_id: number) {
+    return send("POST", `/friends/remove/?request_id=${request_id}`);
 }
 
-export function getIncomingRequests(user_id: number) {
-    return send("GET", `/friends/incoming/?user_id=${user_id}`);
+export function getIncomingRequests() {
+    return send("GET", `/friends/incoming/`);
 }
 
-export function getOutgoingRequests(user_id: number) {
-    return send("GET", `/friends/outgoing/?user_id=${user_id}`);
+export function getOutgoingRequests() {
+    return send("GET", `/friends/outgoing/`);
 }
 
-export function sendFriendRequest(sender_id: number, receiver_id: number) {
-    return send("POST", `/friends/?sender_id=${sender_id}&receiver_id=${receiver_id}`);
+export function sendFriendRequest(receiver_id: number) {
+    return send("POST", `/friends/?receiver_id=${receiver_id}`);
 }
 
 export function acceptFriendRequest(request_id: number) {
@@ -161,8 +169,8 @@ export function rejectFriendRequest(request_id: number) {
     return send("POST", `/friends/reject/?request_id=${request_id}`);
 }
 
-export function unsendFriendRequest(request_id: number, user_id: number) {
-    return send("POST", `/friends/unsend/?request_id=${request_id}&user_id=${user_id}`);
+export function unsendFriendRequest(request_id: number,) {
+    return send("POST", `/friends/unsend/?request_id=${request_id}`);
 }
 
 export function logStock(open: number, high: number, low: number, close: number, volume: number, symbol: string) {

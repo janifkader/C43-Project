@@ -14,7 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { styled } from '@mui/material/styles';
 import { List, RowComponentProps } from 'react-window';
 import { krona, tomorrow } from "../app/fonts";
@@ -67,16 +67,18 @@ function Transaction () {
 
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [transactionsTotal, setTransactionsTotal] = useState(0);
+	const [port_id, setPortId] = useState(-1);
 	const editRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
+	const params = useParams();
 
 	const handlePort = function () {
-		router.push('/portfolio');
+		router.push(`/portfolio/${port_id}`);
 	}
 
 	function Row({ index, transactions, style }: RowComponentProps<{ transactions: Transaction[] }>) {
 	  const trans = transactions[index];
-	  const text = `${trans.date}: ${trans.type} ${trans.amount} shares of ${trans.symbol} for ${trans.unit_cost} per share.`;
+	  const text = `${trans.date}: ${trans.type} ${trans.amount} shares of ${trans.symbol} for $${trans.unit_cost} per share.`;
 		  return (
 		    <ListItem style={style} key={index} component="div" >
 		        <ListItemText primary={text} primaryTypographyProps={{ 
@@ -91,13 +93,16 @@ function Transaction () {
 
 	useEffect(function () {
 	    async function load() {
-	    	const port_id = Number(localStorage.getItem("port_id")) || 0;
-	    	const result = await getTransactions(port_id);
-	      setTransactions(result);
-	      setTransactionsTotal(result.length);
+  			const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  			if (id) {
+  				setPortId(Number(id));
+	    		const result = await getTransactions(id);
+	    		setTransactions(result);
+	      	setTransactionsTotal(result.length);
+	    	}
 	    }
 	    load();
-	  }, []);
+	  }, [params.id]);
 
 	const transactionsHeight = Math.min(transactionsTotal * 46, 368);
 
@@ -112,18 +117,18 @@ function Transaction () {
 		    >
 		   <Grid size={12} display="flex" justifyContent="center"><Title>{"Transactions"}</Title></Grid>
 		   <Grid size={12} display="flex" justifyContent="center">
-		  	<Box sx={{ width: "100%", height: transactionsHeight, maxWidth: 600, bgcolor: "#8FCAFA", color: "#2798F5" }}>
+		  	<Box sx={{ width: "100%", height: transactionsHeight, maxWidth: "100%", bgcolor: "#8FCAFA", color: "#2798F5" }}>
 		      <List
 		        rowHeight={46}
 		        rowCount={transactionsTotal}
-		        style={{ height: transactionsHeight, width: 600 }}
+		        style={{ height: transactionsHeight, width: "100%" }}
 		        rowProps={{ transactions }}
 		        overscanCount={5}
 		        rowComponent={Row}
 		      />
 		    </Box>
 		  </Grid>
-		  <Grid size={12} display="flex" justifyContent="center"><Button onClick={handlePort}>← Portfolio</Button></Grid>
+		  <Grid size={12} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handlePort}>← Portfolio</Button></Grid>
 			</Grid>
 		 </div>
 	);

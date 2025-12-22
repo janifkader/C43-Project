@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.c43.portfolio_manager.Database;
 import com.c43.portfolio_manager.model.StockList;
+import com.c43.portfolio_manager.model.User;
 import com.c43.portfolio_manager.model.SharedStockList;
 import com.c43.portfolio_manager.model.Stock;
 
@@ -57,9 +58,8 @@ public class StockListRepo {
 
 	        while (rs.next()) {
 	        	int sl_id = rs.getInt("sl_id");
-	        	int u_id = rs.getInt("user_id");
 	        	String visibility = rs.getString("visibility");
-	            lists.add(new StockList(sl_id, u_id, visibility));
+	            lists.add(new StockList(sl_id, visibility));
 	        }
 	    } 
 	    catch (SQLException e) {
@@ -127,9 +127,8 @@ public class StockListRepo {
 	        rs = pstmt.executeQuery();
 
 	        if (rs.next()) {
-	        	int u_id = rs.getInt("user_id");
 	        	String visibility = rs.getString("visibility");
-	            return new StockList(sl_id, u_id, visibility);
+	            return new StockList(sl_id, visibility);
 	        }
 	    } 
 	    catch (SQLException e) {
@@ -344,5 +343,35 @@ public class StockListRepo {
 	    }
 
 	    return -1;
+	}
+	
+	public List<User> getSharedWith(int sl_id) {
+		String sql = "SELECT U.username, U.user_id FROM Users U JOIN sharedto S ON U.user_id = s.user_id WHERE sl_id = ?";
+		Connection conn = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    List<User> users = new ArrayList<>();
+	    try {
+	    	conn = Database.getConnection(); 
+	    	pstmt = conn.prepareStatement(sql);
+	        pstmt.setInt(1, sl_id);
+
+	        rs = pstmt.executeQuery();
+
+	        while (rs.next()) {
+	        	int u_id = rs.getInt("user_id");
+	        	String username = rs.getString("username");
+	            users.add(new User(u_id, username, null));
+	        }
+	    } 
+	    catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    finally {
+	        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (pstmt != null) pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+	        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+	    }
+	    return users;
 	}
 }

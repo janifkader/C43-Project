@@ -42,7 +42,6 @@ public class StockMarketService {
                 double price = root.path("c").asDouble();
 
                 if (price == 0) {
-                    System.out.println("Symbol not found or price is 0: " + symbol);
                     return BigDecimal.valueOf(stockRepo.getCurrentPrice(symbol));
                 }
                 
@@ -78,44 +77,45 @@ public class StockMarketService {
 	           
 	           JsonNode root = mapper.readTree(jsonResponse);
 	           
-	
+	           boolean found = true;
 	           if (root.has("c") && !root.path("c").isNull()) {
 	               close = root.path("c").asDouble();
 	               if (close == 0) {
-	                   System.out.println("Symbol not found or price is 0: " + symbol);
-	                   continue;
+	                   found = false;
 	               }
 	           }
 	           if (root.has("h") && !root.path("h").isNull()) {
 	               high = root.path("h").asDouble();
 	               if (high == 0) {
-	                   System.out.println("Symbol not found or price is 0: " + symbol);
-	                   continue;
+	                   found = false;
 	               }
 	           }
 	           if (root.has("l") && !root.path("l").isNull()) {
 	               low = root.path("l").asDouble();
 	               if (low == 0) {
-	                   System.out.println("Symbol not found or price is 0: " + symbol);
-	                   continue;
+	                   found = false;
 	               }
 	           }
 	           if (root.has("o") && !root.path("o").isNull()) {
 	               open = root.path("o").asDouble();
 	               if (open == 0) {
-	                   System.out.println("Symbol not found or price is 0: " + symbol);
-	                   continue;
+	                   found = false;
 	               }
 	           }
 	           if (root.has("t") && !root.path("t").isNull()) {
 	               timestamp = root.path("t").asInt();
 	               if (timestamp == 0) {
-	                   System.out.println("Symbol not found or price is 0: " + symbol);
-	                   continue;
+	                   found = false;
 	               }
 	           }
-	           daily.add(new Dailystock(new Date(timestamp * 1000L), open, high, low, close, volume, symbol));
-	       } 
+	           if (found) {
+	        	   daily.add(new Dailystock(new Date(timestamp * 1000L), open, high, low, close, volume, symbol));
+	           }
+	           else {
+	        	   double cur = stockRepo.getCurrentPrice(symbol);
+	        	   daily.add(new Dailystock(new Date(timestamp * 1000L), cur, cur, cur, cur, 0, symbol));
+	           }
+	       }    
 	       catch (Exception e) {
 	           System.out.println("Error fetching data for " + symbol + ": " + e.getMessage());
 	       }

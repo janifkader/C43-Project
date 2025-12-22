@@ -82,13 +82,12 @@ function Friend() {
 	}
 
 	const handleSend = async function (receiver_id: number) {
-		const user_id = Number(localStorage.getItem("user_id")) || 0;
-		const ret = await sendFriendRequest(user_id, receiver_id);
+		const ret = await sendFriendRequest(receiver_id);
 		if (ret == -1) {
 			setInvalid(true);
 		}
 		else{
-			const sUpdate = await getOutgoingRequests(user_id);
+			const sUpdate = await getOutgoingRequests();
 		  setSent(sUpdate);
 		  setSentTotal(sUpdate.length);
 		}
@@ -97,35 +96,31 @@ function Friend() {
 
 	const handleAccept = async function (request_id: number) {
 		await acceptFriendRequest(request_id);
-		const user_id = Number(localStorage.getItem("user_id")) || 0;
-		const update = await getFriends(user_id);
+		const update = await getFriends();
 		setFriends(update);
 		setFriendsTotal(update.length);
-		const rUpdate = await getIncomingRequests(user_id);
+		const rUpdate = await getIncomingRequests();
 	  setRequests(rUpdate);
 	  setRequestsTotal(rUpdate.length);
 	}
 
 	const handleReject = async function (request_id: number) {
 		await rejectFriendRequest(request_id);
-		const user_id = Number(localStorage.getItem("user_id")) || 0;
-		const rUpdate = await getIncomingRequests(user_id);
+		const rUpdate = await getIncomingRequests();
 	  setRequests(rUpdate);
 	  setRequestsTotal(rUpdate.length);
 	}
 
 	const handleUnsend = async function (request_id: number) {
-		const user_id = Number(localStorage.getItem("user_id")) || 0;
-		await unsendFriendRequest(request_id, user_id);
-		const sUpdate = await getOutgoingRequests(user_id);
+		await unsendFriendRequest(request_id);
+		const sUpdate = await getOutgoingRequests();
 	  setSent(sUpdate);
 	  setSentTotal(sUpdate.length);
 	}
 
 	const handleRemove = async function (request_id: number) {
-		const user_id = Number(localStorage.getItem("user_id")) || 0;
-		await removeFriend(request_id, user_id);
-		const update = await getFriends(user_id);
+		await removeFriend(request_id);
+		const update = await getFriends();
 		setFriends(update);
 		setFriendsTotal(update.length);
 	}
@@ -201,14 +196,13 @@ function Friend() {
 
 	  useEffect(function () {
 	    async function load() {
-	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
-	      const result = await getFriends(user_id);
+	      const result = await getFriends();
 	      setFriends(result);
 	      setFriendsTotal(result.length);
-	      const inResults = await getIncomingRequests(user_id);
+	      const inResults = await getIncomingRequests();
 	      setRequests(inResults);
 	      setRequestsTotal(inResults.length);
-	      const outResults = await getOutgoingRequests(user_id);
+	      const outResults = await getOutgoingRequests();
 	      setSent(outResults);
 	      setSentTotal(outResults.length);
 	      const uResults = await getUsers();
@@ -282,7 +276,7 @@ function Friend() {
       sx={{ height: '100vh' }}
     >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Friends"}</Title></Grid>
-			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleOpen}>Send a Friend Request</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpen}>Send a Friend Request</Button></Grid>
 			<Grid size={4} display="flex" justifyContent="center"><Subtitle>{"Friends"}</Subtitle></Grid>
 			<Grid size={4} display="flex" justifyContent="center"><Subtitle>{"Requests Sent"}</Subtitle></Grid>
 			<Grid size={4} display="flex" justifyContent="center"><Subtitle>{"Requests"}</Subtitle></Grid>
@@ -323,7 +317,7 @@ function Friend() {
 		    </Box>
 		  </Grid>
 		   <Grid size={12} display="flex" justifyContent="center">
-        <Button sx={{ color: "#2798F5" }} onClick={handleHome}>← Home</Button>
+        <Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleHome}>← Home</Button>
        </Grid>
   	</Grid>
     </div>

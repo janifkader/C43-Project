@@ -19,12 +19,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { createPortfolio, getPortfolios, createStockList, getStockLists, getSharedStockLists, getUser } from '../api/api';
+import { createPortfolio, getPortfolios, createStockList, getStockLists, getSharedStockLists, getUser, signout } from '../api/api';
 import { useRouter } from "next/navigation";
 
 interface Portfolio {
 	port_id: number;
-	user_id: number;
 	cash_amt: number;
 }
 
@@ -73,19 +72,23 @@ const Subtitle = styled(Typography)(({ theme }) => ({
 
 function Home() {
 
-	const logout = function() {
-		localStorage.clear();
-		router.push("/");
+	const logout = async function() {
+		const res = await signout();
+		if (res == 0){
+			router.push("/");
+		}
 	}
 
 	const handlePortfolioPage = function(port_id: number) {
-		localStorage.setItem("port_id", port_id.toString());
-		router.push("/portfolio");
+		router.push(`/portfolio/${port_id}`);
 	}
 
 	const handleSLPage = function(sl_id: number) {
-		localStorage.setItem("sl_id", sl_id.toString());
-		router.push("/stocklist");
+		router.push(`/stocklist/${sl_id}`);
+	}
+
+	const handleSLShared = function(sl_id: number) {
+		router.push(`/stocklist/${sl_id}_shared`);
 	}
 
 	const handleOpenPort = function() {
@@ -106,7 +109,7 @@ function Home() {
 	}
 
 	const handleFriend = function() {
-		router.push("friends");
+		router.push("/friends");
 	}
 
 	const handleSubmitPort = (e: React.FormEvent<HTMLFormElement>) => {
@@ -142,28 +145,26 @@ function Home() {
 	const router = useRouter();
 
 	const handlePortfolio = async function (cash_amt: number) {
-		const user_id = Number(localStorage.getItem("user_id")) || 0;
-		let port_id = await createPortfolio(0, user_id, cash_amt);
-		const refreshPorts = await getPortfolios(user_id);
+		let port_id = await createPortfolio(0, cash_amt);
+		const refreshPorts = await getPortfolios();
 		setPortfolios(refreshPorts);
 		setPortTotal(refreshPorts.length);
 	}
 
 	const handleStockList = async function (visibility: string) {
-		const user_id = Number(localStorage.getItem("user_id")) || 0;
-		let sl_id = await createStockList(0, user_id, visibility);
-		const refreshSls = await getStockLists(user_id);
+		let sl_id = await createStockList(0, visibility);
+		const refreshSls = await getStockLists();
 		setStockLists(refreshSls);
 		setSLTotal(refreshSls.length);
 	}
 
 	function PortRow({ index, portfolios, style }: RowComponentProps<{ portfolios: Portfolio[] }>) {
 	  const port = portfolios[index];
-	  const text = index+1 + ". Cash Amount: " + port.cash_amt;
+	  const text = index+1 + ". Cash Amount: $" + port.cash_amt;
 	  return (
-	    <ListItem style={style} key={index} component="div" disablePadding>
+	    <ListItem style={style} key={index} component="div" disablePadding >
 	      <ListItemButton onClick={() => handlePortfolioPage(port.port_id)}>
-	        <ListItemText primary={text} />
+	        <ListItemText primary={text} primaryTypographyProps = {{ color: "#2798F5", align: 'center', fontFamily: tomorrow.style.fontFamily, fontWeight: 'bold' }} />
 	      </ListItemButton>
 	    </ListItem>
 	  );
@@ -175,7 +176,7 @@ function Home() {
 	  return (
 	    <ListItem style={style} key={index} component="div" disablePadding>
 	      <ListItemButton onClick={() => handleSLPage(sl.sl_id)}>
-	        <ListItemText primary={text} />
+	        <ListItemText primary={text} primaryTypographyProps = {{ color: "#2798F5", align: 'center', fontFamily: tomorrow.style.fontFamily, fontWeight: 'bold' }} />
 	      </ListItemButton>
 	    </ListItem>
 	  );
@@ -186,8 +187,8 @@ function Home() {
 	  const text = sl.username + "'s Stock List: Visibility: " + sl.visibility;
 	  return (
 	    <ListItem style={style} key={index} component="div" disablePadding>
-	      <ListItemButton onClick={() => handleSLPage(sl.sl_id)}>
-	        <ListItemText primary={text} />
+	      <ListItemButton onClick={() => handleSLShared(sl.sl_id)}>
+	        <ListItemText primary={text} primaryTypographyProps = {{ color: "#2798F5", align: 'center', fontFamily: tomorrow.style.fontFamily, fontWeight: 'bold' }} />
 	      </ListItemButton>
 	    </ListItem>
 	  );
@@ -196,25 +197,27 @@ function Home() {
 
 	  useEffect(function () {
 	    async function load() {
-	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
-	      const result = await getPortfolios(user_id);
+	      const result = await getPortfolios();
 	      setPortfolios(result);
 	      setPortTotal(result.length);
-	      const slResult = await getStockLists(user_id);
+	      const slResult = await getStockLists();
 	      setStockLists(slResult);
 	      setSLTotal(slResult.length);
-	      const sharedResult = await getSharedStockLists(user_id);
+	      const sharedResult = await getSharedStockLists();
 	      setShared(sharedResult);
 	      setSharedTotal(sharedResult.length);
-	      const uName = await getUser(user_id);
-	      setUsername(uName);
+	      const uName = await getUser();
+	      setUsername(uName.username);
 	    }
 	    load();
 	  }, []);
 
 	const portHeight = Math.min(portTotal * 46, 368);
+	const isPortScroll = (portTotal * 46) > 368;
 	const slHeight = Math.min(slTotal * 46, 368);
+	const isSLScroll = (slTotal * 46) > 368;
 	const sharedHeight = Math.min(sharedTotal * 46, 368);
+	const isSharedScroll = (sharedTotal * 46) > 368;
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>
@@ -286,53 +289,54 @@ function Home() {
       sx={{ minHeight: '100vh', pb: 5 }}
     >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{username ? (username + "'s Portfolio Manager") : "Portfolio Manager"}</Title></Grid>
-			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Portfolios"}</Subtitle></Grid>
-			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Stock Lists"}</Subtitle></Grid>
-			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleFriend}>{"View Friends"}</Button></Grid>
-			<Grid size={6} display="flex" justifyContent="center">
-				<Box sx={{ width: "100%", height: portHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+			<Grid size={4} display="flex" justifyContent="center"><Subtitle>{"Portfolios"}</Subtitle></Grid>
+			<Grid size={4} display="flex" justifyContent="center"><Subtitle>{"Stock Lists"}</Subtitle></Grid>
+			<Grid size={4} display="flex" justifyContent="center"><Subtitle>{"Shared Stock Lists"}</Subtitle></Grid>
+			<Grid size={4} display="flex" justifyContent="center">
+				<Box sx={{ width: "100%", height: portHeight, maxWidth: 360, bgcolor: "#8FCAFA" }}>
 		      <List
 		        rowHeight={46}
 		        rowCount={portTotal}
-		        style={{ height: portHeight, width: 360 }}
+		        style={{ height: portHeight, width: 360, overflowY: isPortScroll ? 'auto' : 'hidden'  }}
 		        rowProps={{ portfolios }}
 		        overscanCount={5}
 		        rowComponent={PortRow}
 		      />
 		    </Box>
 		   </Grid>
-		  <Grid size={6} display="flex" justifyContent="center">
-		  	<Box sx={{ width: "100%", height: slHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+		  <Grid size={4} display="flex" justifyContent="center">
+		  	<Box sx={{ width: "100%", height: slHeight, maxWidth: 360, bgcolor: "#8FCAFA" }}>
 		      <List
 		        rowHeight={46}
 		        rowCount={slTotal}
-		        style={{ height: slHeight, width: 360 }}
+		        style={{ height: slHeight, width: 360, overflowY: isSLScroll ? 'auto' : 'hidden'  }}
 		        rowProps={{ stockLists }}
 		        overscanCount={5}
 		        rowComponent={SLRow}
 		      />
 		    </Box>
 		  </Grid>
-			<Grid size={6} display="flex" justifyContent="center"><Button onClick={handleOpenPort} sx={{ color: "#2798F5" }}>{"Add Portfolio"}</Button></Grid>
-			<Grid size={6} display="flex" justifyContent="center"><Button onClick={handleOpenSL} sx={{ color: "#2798F5" }}>{"Add Stock List"}</Button></Grid>
-			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Shared Stock Lists"}</Subtitle></Grid>
-			<Grid size={12} display="flex" justifyContent="center">
-		  	<Box sx={{ width: "100%", height: sharedHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+		  <Grid size={4} display="flex" justifyContent="center">
+		  	<Box sx={{ width: "100%", height: sharedHeight, maxWidth: 360, bgcolor: "#8FCAFA" }}>
 		      <List
 		        rowHeight={46}
 		        rowCount={sharedTotal}
-		        style={{ height: sharedHeight, width: 360 }}
+		        style={{ height: sharedHeight, width: 360, overflowY: isSharedScroll ? 'auto' : 'hidden'  }}
 		        rowProps={{ shared }}
 		        overscanCount={5}
 		        rowComponent={SharedRow}
 		      />
 		    </Box>
 		  </Grid>
+			<Grid size={4} display="flex" justifyContent="center"><Button onClick={handleOpenPort} sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} >{"Add Portfolio"}</Button></Grid>
+			<Grid size={4} display="flex" justifyContent="center"><Button onClick={handleOpenSL} sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }}>{"Add Stock List"}</Button></Grid>
+			<Grid size={4} display="flex" justifyContent="center"><Button onClick={handleFriend} sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }}>{"View Friends"}</Button></Grid>
+			
 			<Grid size={12} display="flex" justifyContent="center">
 				
 		   </Grid>
 		   <Grid size={12} display="flex" justifyContent="center">
-        <Button sx={{ color: "#2798F5" }} onClick={logout}>Log Out</Button>
+        <Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={logout}>Log Out</Button>
        </Grid>
   	</Grid>
     </div>

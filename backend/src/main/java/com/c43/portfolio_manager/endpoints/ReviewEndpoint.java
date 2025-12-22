@@ -18,8 +18,8 @@ public class ReviewEndpoint {
     }
     
     @PostMapping("/")
-    public int createReview(@RequestBody Review review) {
-        return service.createReview(review.user_id, review.sl_id, review.text);
+    public int createReview(@CookieValue(value = "user_id", defaultValue = "-1") int user_id, @RequestBody Review review) {
+        return service.createReview(user_id, review.sl_id, review.text);
     }
     
     @GetMapping("/")
@@ -28,12 +28,12 @@ public class ReviewEndpoint {
     }
     
     @DeleteMapping("/")
-    public boolean deleteReview(@RequestParam int review_id, @RequestParam int user_id) {
+    public boolean deleteReview(@RequestParam int review_id, @CookieValue(value = "user_id", defaultValue = "-1") int user_id) {
         return service.deleteReview(review_id, user_id);
     }
     
     @PutMapping("/")
-    public boolean editReview(@RequestParam int review_id, @RequestParam int user_id, @RequestParam String text) {
+    public boolean editReview(@RequestParam int review_id, @CookieValue(value = "user_id", defaultValue = "-1") int user_id, @RequestParam String text) {
         return service.editReview(review_id, user_id, text);
     }
 }

@@ -24,7 +24,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import HistoryDialog from './HistoryDialog'
 import { getPortfolio, getStocks, getPortfolioStocks, insertPortfolioStock, sellPortfolioStock, getPrice, getPortfolioPrices, updatePortfolio, addTransaction, logStock, getHistory, getPrediction } from '../api/api';
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 const Title = styled(Typography)(({ theme }) => ({
   ...theme.typography.h3,
@@ -61,7 +61,6 @@ const DialogField = styled(TextField)(({ theme }) => ({
 
 interface Portfolio {
 	port_id: number;
-	user_id: number;
 	cash_amt: number;
 }
 
@@ -90,6 +89,7 @@ function Portfolio() {
 	const [price, setPrice] = useState(0);
 	const [shares, setShares] = useState(0);
 	const [total, setTotal] = useState(0);
+	const [port_id, setPortId] = useState(-1);
 	const [allStocks, setAllStocks] = useState<string[]>([]);
 	const [search, setSearch] = useState(false);
 	const [allStocksTotal, setAllStocksTotal] = useState(0);
@@ -109,9 +109,10 @@ function Portfolio() {
 	const sellRef = useRef<HTMLInputElement>(null);
 	const cashAmtRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
+	const params = useParams();
 
 	const handleTrans = function () {
-		router.push("/transaction");
+		router.push(`/transaction/${port_id}`);
 	}
 
 	const handleOpenSell = function () {
@@ -185,7 +186,7 @@ function Portfolio() {
 	const addCash = async function (cash: number) {
 		if (!portfolio) return;
 		portfolio.cash_amt = Number(portfolio?.cash_amt || 0) + Number(cash);
-		const up = await updatePortfolio(portfolio?.port_id || 0, portfolio?.user_id || 0, portfolio?.cash_amt || 0);
+		const up = await updatePortfolio(portfolio?.port_id || 0, portfolio?.cash_amt || 0);
 		if (up != -1){
 			setDialogText("Portfolio successfully updated!");
 		}
@@ -245,14 +246,14 @@ function Portfolio() {
   const handleInsertStock = async function (symbol: string, num_of_shares: number) {
   	if (!portfolio) return;
   	if (price*num_of_shares < portfolio.cash_amt) {
-	  	const insert = await insertPortfolioStock(portfolio?.port_id, symbol, num_of_shares);
-	  	const refresh = await getPortfolioStocks(portfolio?.port_id);
-	  	const refreshPrices = await getPortfolioPrices(portfolio?.port_id);
+	  	const insert = await insertPortfolioStock(port_id, symbol, num_of_shares);
+	  	const refresh = await getPortfolioStocks(port_id);
+	  	const refreshPrices = await getPortfolioPrices(port_id);
 	  	const diff = portfolio.cash_amt - price*num_of_shares;
 	  	const money = Number(diff.toFixed(2));
 	  	portfolio.cash_amt = money
-	  	await updatePortfolio(portfolio.port_id, portfolio.user_id, money);
-	  	await addTransaction(0, symbol, portfolio.port_id, "BUY", num_of_shares, price, new Date());
+	  	await updatePortfolio(port_id, money);
+	  	await addTransaction(0, symbol, port_id, "BUY", num_of_shares, price, new Date());
 	  	setStocks(refresh);
 	  	setStockTotal(refresh.length);
 	  	setAllPrices(refreshPrices);
@@ -328,11 +329,11 @@ function Portfolio() {
   	const text = h.symbol + ": " + h.num_of_shares + " shares: " + priceDisplay;
 	  return (
 	    <ListItem style={style} key={index} component="div" secondaryAction={
-	              <Button onClick={() => handleSellStock(h.symbol, h.num_of_shares)} >
+	              <Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={() => handleSellStock(h.symbol, h.num_of_shares)} >
 	                SELL
 	              </Button>
 	            }>
-	        <Button onClick={() => handlePredict(h.symbol)} >
+	        <Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={() => handlePredict(h.symbol)} >
 	           PREDICT
 	         </Button>
 	       <ListItemButton onClick={() => handleOpenTime(h.symbol)}>
@@ -360,24 +361,28 @@ function Portfolio() {
 
 	useEffect(() => {
 		const fetchPort = async function () {
-			const port_id = Number(localStorage.getItem("port_id")) || 0;
-			const p = await getPortfolio(port_id);
+  		const portId = Array.isArray(params.id) ? params.id[0] : params.id;
+  		if (portId){
+  			setPortId(Number(portId));
+  			const p = await getPortfolio(portId);
 	    	setPortfolio(p);
+  		}
 		}
 		fetchPort();
-	  }, []);
+	  }, [params.id]);
 
 	useEffect(function () {
 	    async function load() {
-	    	const port_id = Number(localStorage.getItem("port_id")) || 0;
-	      const result = await getPortfolioStocks(port_id);
-	      setStocks(result);
-	      setStockTotal(result.length);
-	      const res = await getPortfolioPrices(port_id);
-	      setAllPrices(res);
+	    	if (port_id != -1) {
+		      const result = await getPortfolioStocks(port_id);
+		      setStocks(result);
+		      setStockTotal(result.length);
+		      const res = await getPortfolioPrices(port_id);
+		      setAllPrices(res);
+		    }
 	    }
 	    load();
-	  }, []);
+	  }, [port_id]);
 
 	useEffect(function () {
 			if (allPrices) {
@@ -396,7 +401,9 @@ function Portfolio() {
 
 
 	const portHeight = Math.min(stockTotal * 46, 368);
+	const isPortScroll = (stockTotal * 46) > 368;
 	const stockHeight = Math.min(allStocksTotal * 46, 368);
+	const isStockScroll = (allStocksTotal * 46) > 368;
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA" }}>
@@ -411,10 +418,10 @@ function Portfolio() {
           },
         }}
 			>
-        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>Add new Stock List</DialogTitle>
+        <DialogTitle sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>View History</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
-          	Select your stock list's visibility
+          	Select your time frame
           </DialogContentText>
             <ButtonGroup variant="contained">
 						  <Button sx={{ backgroundColor: "#2798F5" }} onClick={() => handleHistory(0)}>Week</Button>
@@ -574,7 +581,7 @@ function Portfolio() {
 		      sx={{ minHeight: '100vh', pb: 5 }}
 		    >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio"}</Title></Grid>
-			<Grid size={12} display="flex" justifyContent="center" sx={{ gap: 4 }}><Subtitle>{"Cash Amount: $" + portfolio?.cash_amt || 0}</Subtitle><Button onClick={handleOpen}>Add Cash</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center" sx={{ gap: 4 }}><Subtitle>{"Cash Amount: $" + portfolio?.cash_amt ?? 0}</Subtitle><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpen}>Add Cash</Button></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Current Holdings"}</Subtitle></Grid>
 			<Grid size={6} display="flex" justifyContent="center">
         <Subtitle>{"Buy a Stock"}</Subtitle>
@@ -585,7 +592,7 @@ function Portfolio() {
 		      <List
 		        rowHeight={46}
 		        rowCount={stockTotal}
-		        style={{ height: portHeight, width: 600 }}
+		        style={{ height: portHeight, width: 600, overflowY: isPortScroll ? 'auto' : 'hidden'  }}
 		        rowProps={{ stocks, allPrices }}
 		        overscanCount={5}
 		        rowComponent={PortRow}
@@ -597,7 +604,7 @@ function Portfolio() {
 		      <List
 		        rowHeight={46}
 		        rowCount={allStocksTotal}
-		        style={{ height: stockHeight, width: 360 }}
+		        style={{ height: stockHeight, width: 360, overflowY: isStockScroll ? 'auto' : 'hidden'  }}
 		        rowProps={{ allStocks }}
 		        overscanCount={5}
 		        rowComponent={StockRow}
@@ -605,9 +612,9 @@ function Portfolio() {
 		    </Box>
 		  </Grid>
 		  <Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Total Value: $" + total}</Subtitle></Grid>
-		  <Grid size={12} display="flex" justifyContent="center"><Button onClick={handleLog}>Record Daily Information</Button></Grid>
-		  <Grid size={12} display="flex" justifyContent="center"><Button onClick={handleTrans}>View Transactions</Button></Grid>
-			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleHome}>← Home</Button></Grid>
+		  <Grid size={12} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleLog}>Record Daily Information</Button></Grid>
+		  <Grid size={12} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleTrans}>View Transactions</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleHome}>← Home</Button></Grid>
 			</Grid>
 			<HistoryDialog 
 			    open={historyOpen} 

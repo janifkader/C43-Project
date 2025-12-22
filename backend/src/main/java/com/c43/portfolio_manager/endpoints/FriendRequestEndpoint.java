@@ -15,17 +15,17 @@ public class FriendRequestEndpoint {
     }
     
     @PostMapping("/")
-    public int sendFriendRequest(@RequestParam int sender_id, @RequestParam int receiver_id) {
+    public int sendFriendRequest(@CookieValue(value = "user_id", defaultValue = "-1") int sender_id, @RequestParam int receiver_id) {
         return service.sendFriendRequest(sender_id, receiver_id);
     }
     
     @GetMapping("/incoming/")
-    public List<FriendRequest> getIncomingRequests(@RequestParam int user_id) {
+    public List<FriendRequest> getIncomingRequests(@CookieValue(value = "user_id", defaultValue = "-1") int user_id) {
         return service.getIncomingFriendRequests(user_id);
     }
     
     @GetMapping("/outgoing/") 
-    public List<FriendRequest> getOutgoingRequests(@RequestParam int user_id) {
+    public List<FriendRequest> getOutgoingRequests(@CookieValue(value = "user_id", defaultValue = "-1") int user_id) {
         return service.getOutgoingFriendRequests(user_id);
     }
     
@@ -40,22 +40,22 @@ public class FriendRequestEndpoint {
     }
     
     @PostMapping("/remove/")
-    public boolean removeFriend(@RequestParam int request_id, @RequestParam int user_id) {
+    public boolean removeFriend(@RequestParam int request_id, @CookieValue(value = "user_id", defaultValue = "-1") int user_id) {
         return service.removeFriend(request_id, user_id);
     }
     
     @PostMapping("/unsend/")
-    public boolean unsendRequest(@RequestParam int request_id, @RequestParam int user_id) {
+    public boolean unsendRequest(@RequestParam int request_id, @CookieValue(value = "user_id", defaultValue = "-1") int user_id) {
         return service.unsendFriendRequest(request_id, user_id);
     }
     
     @GetMapping("/")
-    public List<FriendRequest> getFriends(@RequestParam int user_id) {
+    public List<FriendRequest> getFriends(@CookieValue(value = "user_id", defaultValue = "-1") int user_id) {
         return service.showFriends(user_id);
     }
     
     @GetMapping("/can-resend/")
-    public boolean canResendRequest(@RequestParam int sender_id, @RequestParam int receiver_id) {
+    public boolean canResendRequest(@CookieValue(value = "user_id", defaultValue = "-1") int sender_id, @RequestParam int receiver_id) {
         return service.canResendRequest(sender_id, receiver_id);
     }
 }

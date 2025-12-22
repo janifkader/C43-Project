@@ -49,7 +49,7 @@ public class TransactionRepo {
 	
 	// Get all transactions related to a portfolio.
 	public List<Transaction> getTransactions(int port_id) {
-	    String sql = "SELECT transaction_id, symbol, type, amount, unit_cost, date FROM Transaction WHERE port_id = ?";
+	    String sql = "SELECT transaction_id, symbol, type, amount, unit_cost, date FROM Transaction WHERE port_id = ? ORDER BY transaction_id DESC";
 	    List<Transaction> transactions = new ArrayList<>();
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;

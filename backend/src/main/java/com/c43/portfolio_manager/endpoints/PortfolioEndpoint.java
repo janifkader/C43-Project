@@ -5,6 +5,10 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.c43.portfolio_manager.service.PortfolioService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+
 import com.c43.portfolio_manager.model.Portfolio;
 import com.c43.portfolio_manager.model.Stock;
 
@@ -18,12 +22,12 @@ public class PortfolioEndpoint {
     }
     
     @PostMapping("/")
-    public int createPortfolio(@RequestBody Portfolio port) {
-        return service.createPortfolio(port.user_id, port.cash_amt);
+    public int createPortfolio(@CookieValue(value = "user_id", defaultValue = "-1") int user_id, @RequestBody Portfolio port) {
+        return service.createPortfolio(user_id, port.cash_amt);
     }
     
     @GetMapping("/")
-    public List<Portfolio> getPortfolios(@RequestParam int user_id) {
+    public List<Portfolio> getPortfolios(@CookieValue(value = "user_id", defaultValue = "-1") int user_id) {
         return service.getPortfolios(user_id);
     }
     

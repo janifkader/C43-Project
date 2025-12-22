@@ -101,7 +101,7 @@ public class PortfolioRepo {
 	        while (rs.next()) {
 	        	int port_id = rs.getInt("port_id");
 	        	double cash_amt = rs.getDouble("cash_amt");
-	            ports.add(new Portfolio(port_id, user_id, cash_amt));
+	            ports.add(new Portfolio(port_id, cash_amt));
 	        }
 	    } 
 	    catch (SQLException e) {
@@ -133,7 +133,7 @@ public class PortfolioRepo {
 	        while (rs.next()) {
 	        	int user_id = rs.getInt("user_id");
 	        	double cash_amt = rs.getDouble("cash_amt");
-	            return new Portfolio(port_id, user_id, cash_amt);
+	            return new Portfolio(port_id, cash_amt);
 	        }
 	    } 
 	    catch (SQLException e) {

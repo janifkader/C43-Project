@@ -24,8 +24,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Review from './Review'
-import { insertSLStock, getStockList, getStockListStocks, getStocks, deleteStockList, deleteStockListStock, shareStockList, unshareStockList, getFriends, updateStockListVisibility } from '../api/api';
-import { useRouter } from "next/navigation";
+import { insertSLStock, getStockList, getStockListStocks, getStocks, deleteStockList, deleteStockListStock, shareStockList, unshareStockList, getFriends, updateStockListVisibility, getSharedTo } from '../api/api';
+import { useRouter, useParams } from "next/navigation";
 
 const Title = styled(Typography)(({ theme }) => ({
   ...theme.typography.h3,
@@ -76,14 +76,21 @@ interface FriendRequest {
 	request_id: number;
 	sender_id: number;
 	receiver_id: number;
-	username: string
+	username: string;
 	status: string;
 	last_updated: Date;
+}
+
+interface Friend {
+	user_id: number;
+	username: string;
 }
 
 
 function StockList() {
 	const [stocklist, setStocklist] = useState<StockList | null>(null);
+	const [sl_id, setSlId] = useState(-1);
+	const [owner, setOwner] = useState(false);
 	const [currentUser, setCurrentUser] = useState(0);
 	const [stockTotal, setStockTotal] = useState(0);
 	const [stocks, setStocks] = useState<Stock[]>([]);
@@ -95,6 +102,8 @@ function StockList() {
 	const [reviews, setReviews] = useState(false);
 	const [open, setOpen] = useState(false);
 	const [unshare, setUnshare] = useState(false);
+	const [unshareFriend, setUnshareFriend] = useState<Friend[]>([]);
+	const [unshareFriendTotal, setUnshareFriendTotal] = useState(0);
 	const [friends, setFriends] = useState<FriendRequest[]>([]);
 	const [friendsTotal, setFriendsTotal] = useState(0);
 	const [invalid, setInvalid] = useState(false);
@@ -103,6 +112,7 @@ function StockList() {
 	const searchRef = useRef<HTMLInputElement>(null);
 	const sharesRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
+	const params = useParams();
 
 	const handleOpenSL = function() {
 		setOpenSL(true);
@@ -206,7 +216,6 @@ function StockList() {
   }
 
   const handleDelete = async function() {
-  	const sl_id = Number(localStorage.getItem("sl_id")) || 0;
   	const del = await deleteStockList(sl_id);
   	if (del == -1){
 			setDialogText("There was an error trying to delete the Stock List.");
@@ -260,8 +269,7 @@ function StockList() {
 	function SLRow({ index, stocks, style }: RowComponentProps<{ stocks: Stock[] }>) {
 	  const s = stocks[index];
 	  const text = s.symbol + ": " + s.num_of_shares + " shares";
-	  const user = Number(localStorage.getItem("user_id")) || 0;
-	  if (stocklist?.user_id == user){
+	  if (owner){
 		  return (
 		    <ListItem style={style} key={index} component="div" secondaryAction={
 	              <IconButton edge="end" onClick={() => handleDeleteStock(s.symbol)} >
@@ -314,12 +322,11 @@ function StockList() {
 	  );
 	}
 
-	function UnshareRow({ index, friends, style }: RowComponentProps<{ friends: FriendRequest[] }>) {
-	  const friend = friends[index];
-	  const friend_id = (currentUser == friend.receiver_id) ? friend.sender_id : friend.receiver_id;
+	function UnshareRow({ index, unshareFriend, style }: RowComponentProps<{ unshareFriend: Friend[] }>) {
+	  const friend = unshareFriend[index];
 	  return (
 	    <ListItem style={style} key={index} component="div">
-	    	<ListItemButton onClick={() => handleUnshare(friend_id)}>
+	    	<ListItemButton onClick={() => handleUnshare(friend.user_id)}>
 	        <ListItemText primary={friend.username} />
 	      </ListItemButton>
 	    </ListItem>
@@ -328,31 +335,46 @@ function StockList() {
 
 	useEffect(() => {
 		const fetchSl = async function () {
-			const sl_id = Number(localStorage.getItem("sl_id")) || 0;
-			const sl = await getStockList(sl_id);
-	    	setStocklist(sl);
+			if (params.id) {
+				const rawId = Array.isArray(params.id) ? params.id[0] : params.id;
+	  		const id = rawId.split('_');
+	  		const own = id[1] != 'shared';
+				setSlId(Number(id[0]));
+				setOwner(own);
+				const sl = await getStockList(Number(id[0]));
+		    setStocklist(sl);
+		  }
 		}
 		fetchSl();
-	  }, []);
+	  }, [params.id]);
 
 	useEffect(function () {
 	    async function load() {
-	    	const sl_id = Number(localStorage.getItem("sl_id")) || 0;
-	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
-	    	setCurrentUser(user_id);
-	      const result = await getStockListStocks(sl_id);
-	      setStocks(result);
-	      setStockTotal(result.length);
-	      const f = await getFriends(user_id);
-	      setFriends(f);
-	      setFriendsTotal(f.length);
+	    	if (sl_id != -1) {
+		      const result = await getStockListStocks(sl_id);
+		      setStocks(result);
+		      setStockTotal(result.length);
+		      const f = await getFriends();
+		      const g = await getSharedTo(sl_id);
+		      setUnshareFriend(g);
+		      setUnshareFriendTotal(g.length);
+					const friendUsernames = new Set(g.map(friend => friend.username));
+					const filteredRequests = f.filter(req => !friendUsernames.has(req.username));
+					setFriends(filteredRequests);
+		      setFriendsTotal(filteredRequests.length);
+		    }
 	    }
 	    load();
-	  }, []);
+	  }, [sl_id]);
 
 	const slHeight = Math.min(stockTotal * 46, 368);
+	const isSLScroll = (stockTotal * 46) > 368;
 	const stockHeight = Math.min(allStocksTotal * 46, 368);
+	const isStockScroll = (allStocksTotal * 46) > 368;
 	const friendsHeight = Math.min(friendsTotal * 46, 368);
+	const isFriendScroll = (friendsTotal * 46) > 368;
+	const unshareFriendHeight = Math.min(unshareFriendTotal * 46, 368);
+	const isUnshareScroll = (unshareFriendTotal * 46) > 368;
 
 	return (
 		<div style={{ backgroundColor: "#8FCAFA", minHeight: "100vh", display: "flow-root" }}>
@@ -419,7 +441,7 @@ function StockList() {
 			      <List
 			        rowHeight={46}
 			        rowCount={friendsTotal}
-			        style={{ height: friendsHeight, width: 360 }}
+			        style={{ height: friendsHeight, width: 360, overflowY: isFriendScroll ? 'auto' : 'hidden' }}
 			        rowProps={{ friends }}
 			        overscanCount={5}
 			        rowComponent={FriendRow}
@@ -447,19 +469,19 @@ function StockList() {
           <DialogContentText sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }}>
           	Select a friend to unshare your stock list.
           </DialogContentText>
-            <Box sx={{ width: "100%", height: friendsHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
+            <Box sx={{ width: "100%", height: unshareFriendHeight, maxWidth: 360, bgcolor: "#2798F5" }}>
 			      <List
 			        rowHeight={46}
-			        rowCount={friendsTotal}
-			        style={{ height: friendsHeight, width: 360 }}
-			        rowProps={{ friends }}
+			        rowCount={unshareFriendTotal}
+			        style={{ height: unshareFriendHeight, width: 360, overflowY: isUnshareScroll ? 'auto' : 'hidden' }}
+			        rowProps={{ unshareFriend }}
 			        overscanCount={5}
 			        rowComponent={UnshareRow}
 			      />
 			    </Box>
         </DialogContent>
         <DialogActions>
-          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleClose}>Cancel</Button>
+          <Button sx={{ color: "#8FCAFA", fontFamily: tomorrow.style.fontFamily }} onClick={handleCloseUnshare}>Cancel</Button>
         </DialogActions>
       </Dialog>
 			<Drawer
@@ -538,7 +560,7 @@ function StockList() {
 		      sx={{ minHeight: '100vh', pb: 5 }}
 		    >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Stock List"}</Title></Grid>
-			{ (currentUser == stocklist?.user_id) ?
+			{ owner ?
 			(<>
 				<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Stocks"}</Subtitle></Grid>
 				<Grid size={6} display="flex" justifyContent="center">
@@ -550,7 +572,7 @@ function StockList() {
 		      <List
 		        rowHeight={46}
 		        rowCount={stockTotal}
-		        style={{ height: slHeight, width: 360 }}
+		        style={{ height: slHeight, width: 360, overflowY: isSLScroll ? 'auto' : 'hidden' }}
 		        rowProps={{ stocks }}
 		        overscanCount={5}
 		        rowComponent={SLRow}
@@ -562,7 +584,7 @@ function StockList() {
 		      <List
 		        rowHeight={46}
 		        rowCount={allStocksTotal}
-		        style={{ height: stockHeight, width: 360 }}
+		        style={{ height: stockHeight, width: 360, overflowY: isStockScroll ? 'auto' : 'hidden' }}
 		        rowProps={{ allStocks }}
 		        overscanCount={5}
 		        rowComponent={StockRow}
@@ -577,7 +599,7 @@ function StockList() {
 		      <List
 		        rowHeight={46}
 		        rowCount={stockTotal}
-		        style={{ height: slHeight, width: 360 }}
+		        style={{ height: slHeight, width: 360, overflowY: isSLScroll ? 'auto' : 'hidden' }}
 		        rowProps={{ stocks }}
 		        overscanCount={5}
 		        rowComponent={SLRow}
@@ -585,12 +607,14 @@ function StockList() {
 		    </Box>
 		  </Grid></>)}
 			<Grid size={12} display="flex" justifyContent="center"><Subtitle>{"Visibility: " + stocklist?.visibility}</Subtitle></Grid>
-			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleOpenReviews}>View Reviews</Button></Grid>
-			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpen}>Share Stock List</Button></Grid>
-			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpenUnshare}>Unshare Stock List</Button></Grid>
-			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleDelete}>Delete Stock List</Button></Grid>
-			<Grid size={3} display="flex" justifyContent="center"><Button onClick={handleOpenSL}>Update Visibility</Button></Grid>
-			<Grid size={12} display="flex" justifyContent="center"><Button onClick={handleHome}>← Home</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpenReviews}>View Reviews</Button></Grid>
+			{owner && <>
+			<Grid size={3} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpen}>Share Stock List</Button></Grid>
+			<Grid size={3} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpenUnshare}>Unshare Stock List</Button></Grid>
+			<Grid size={3} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleDelete}>Delete Stock List</Button></Grid>
+			<Grid size={3} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpenSL}>Update Visibility</Button></Grid>
+			</>}
+			<Grid size={12} display="flex" justifyContent="center"><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleHome}>← Home</Button></Grid>
 			</Grid>
 		</div>
 	

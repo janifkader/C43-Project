@@ -19,7 +19,9 @@ import { styled } from '@mui/material/styles';
 import { List, RowComponentProps } from 'react-window';
 import { krona, tomorrow } from "../app/fonts";
 import { useRef, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { getReviews, writeReview, getStockList, editReview, deleteReview} from '../api/api'
+import Cookies from 'js-cookie';
 
 const DialogField = styled(TextField)(({ theme }) => ({
   width: "500px",
@@ -69,10 +71,12 @@ function Review({ onClose }: { onClose: () => void }) {
 	const [currentUser, setCurrentUser] = useState(0);
 	const [open, setOpen] = useState(false);
 	const [stocklist, setStocklist] = useState<StockList | null>(null);
+	const [sl_id, setSlId] = useState(-1);
 	const [currentReview, setCurrentReview] = useState<Review | null>(null);
 	const [edit, setEdit] = useState(false);
 	const reviewRef = useRef<HTMLInputElement>(null);
 	const editRef = useRef<HTMLInputElement>(null);
+	const params = useParams();
 
 	const handleClose = function () {
 		setOpen(false);
@@ -91,10 +95,8 @@ function Review({ onClose }: { onClose: () => void }) {
 	}
 
 	const handleReview = async function (text: string) {
-		const sl = Number(localStorage.getItem("sl_id")) || 0;
-		const uid = Number(localStorage.getItem("user_id")) || 0;
-		await writeReview(0, uid, sl, text, "");
-		const update = await getReviews(sl);
+		await writeReview(0, sl_id, text, "");
+		const update = await getReviews(sl_id);
 		setReviews(update);
 		setReviewsTotal(update.length);
 	}
@@ -126,7 +128,7 @@ function Review({ onClose }: { onClose: () => void }) {
 		const rev = currentReview;
 		rev.text = text;
 		setCurrentReview(rev);
-		const e = await editReview(currentReview.review_id, currentReview.user_id, text);
+		const e = await editReview(currentReview.review_id, text);
 		const update = await getReviews(stocklist.sl_id);
 		setReviews(update);
 		setReviewsTotal(update.length);
@@ -144,7 +146,7 @@ function Review({ onClose }: { onClose: () => void }) {
 
 	const handleDelete = async function (review_id: number, user_id: number) {
 		if (!stocklist) return;
-		await deleteReview(review_id, user_id);
+		await deleteReview(review_id);
 		const update = await getReviews(stocklist.sl_id);
 		setReviews(update);
 		setReviewsTotal(update.length);
@@ -218,17 +220,21 @@ function Review({ onClose }: { onClose: () => void }) {
 
 	useEffect(function () {
 	    async function load() {
-	    	const user_id = Number(localStorage.getItem("user_id")) || 0;
-	    	const sl_id = Number(localStorage.getItem("sl_id")) || 0;
-	      const result = await getReviews(sl_id);
-	      const sl = await getStockList(sl_id);
-	      setStocklist(sl);
-	      setCurrentUser(user_id);
-	      setReviews(result);
-	      setReviewsTotal(result.length);
+	    	const user_id = Cookies.get('user_id');
+	    	if (params.id && user_id) {
+	    		const rawId = Array.isArray(params.id) ? params.id[0] : params.id;
+	  			const id = rawId.split('_');
+					setSlId(Number(id[0]));
+		      const result = await getReviews(Number(id[0]));
+		      const sl = await getStockList(Number(id[0]));
+		      setStocklist(sl);
+		      setCurrentUser(Number(user_id));
+		      setReviews(result);
+		      setReviewsTotal(result.length);
+		     }
 	    }
 	    load();
-	  }, []);
+	  }, [params.id]);
 
 	const height = Math.min(reviewsTotal * 46, 368);
 	console.log(height);
