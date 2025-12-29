@@ -364,7 +364,7 @@ function Portfolio() {
   		const portId = Array.isArray(params.id) ? params.id[0] : params.id;
   		if (portId){
   			setPortId(Number(portId));
-  			const p = await getPortfolio(portId);
+  			const p = await getPortfolio(Number(portId));
 	    	setPortfolio(p);
   		}
 		}
@@ -581,7 +581,7 @@ function Portfolio() {
 		      sx={{ minHeight: '100vh', pb: 5 }}
 		    >
 			<Grid size={12} display="flex" justifyContent="center"><Title>{"Portfolio"}</Title></Grid>
-			<Grid size={12} display="flex" justifyContent="center" sx={{ gap: 4 }}><Subtitle>{"Cash Amount: $" + portfolio?.cash_amt ?? 0}</Subtitle><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpen}>Add Cash</Button></Grid>
+			<Grid size={12} display="flex" justifyContent="center" sx={{ gap: 4 }}><Subtitle>{"Cash Amount: $" + portfolio?.cash_amt}</Subtitle><Button sx={{ color: "#2798F5", fontFamily: tomorrow.style.fontFamily }} onClick={handleOpen}>Add Cash</Button></Grid>
 			<Grid size={6} display="flex" justifyContent="center"><Subtitle>{"Current Holdings"}</Subtitle></Grid>
 			<Grid size={6} display="flex" justifyContent="center">
         <Subtitle>{"Buy a Stock"}</Subtitle>

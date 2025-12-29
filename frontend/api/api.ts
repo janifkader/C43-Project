@@ -16,7 +16,7 @@ export function signin(user_id: number, username: string, password: string) {
     return send("POST", `/user/login/`, {user_id, username, password});
 }
 
-export function signout(user_id: number, username: string, password: string) {
+export function signout() {
     return send("POST", `/user/logout/`);
 }
 

@@ -39,16 +39,10 @@ public class StockEndpoint {
 		    @Pattern(regexp = "^[A-Z]{1,5}$", message = "Symbol must be 1-5 uppercase letters")
 			String symbol, 
 			
-			@RequestParam 
-			@NotNull(message = "Start date is required")
-		    @PastOrPresent(message = "Start date must be in the past")
-		    @DateTimeFormat(pattern = "yyyy-MM-dd")
+			@RequestParam
 			Date start_date, 
 			
-			@RequestParam 
-			@NotNull(message = "Start date is required")
-		    @Past(message = "End date must not be in the future")
-		    @DateTimeFormat(pattern = "yyyy-MM-dd")
+			@RequestParam
 			Date end_date) {
 		return service.getStockHistory(symbol, start_date, end_date);
 	}

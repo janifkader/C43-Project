@@ -96,7 +96,7 @@ function Transaction () {
   			const id = Array.isArray(params.id) ? params.id[0] : params.id;
   			if (id) {
   				setPortId(Number(id));
-	    		const result = await getTransactions(id);
+	    		const result = await getTransactions(Number(id));
 	    		setTransactions(result);
 	      	setTransactionsTotal(result.length);
 	    	}

@@ -354,8 +354,8 @@ function StockList() {
 		      const result = await getStockListStocks(sl_id);
 		      setStocks(result);
 		      setStockTotal(result.length);
-		      const f = await getFriends();
-		      const g = await getSharedTo(sl_id);
+		      const f: FriendRequest[] = await getFriends();
+		      const g: Friend[] = await getSharedTo(sl_id);
 		      setUnshareFriend(g);
 		      setUnshareFriendTotal(g.length);
 					const friendUsernames = new Set(g.map(friend => friend.username));
