@@ -4,12 +4,10 @@ import jakarta.validation.constraints.*;
 
 public class Portfolio {
 	
-	@NotBlank(message = "User ID cannot be empty")
-	@Pattern(regexp = "^[0-9]+$", message = "User ID can only contain numbers")
+	@Min(value = 0, message = "Portfolio ID must be positive")
 	public int port_id;
 	
-	@NotBlank(message = "Cash Amount cannot be empty")
-	@Pattern(regexp = "^[0-9]+$", message = "User ID can only contain numbers")
+	@Min(value = 0, message = "Cash Amount must be positive")
 	public double cash_amt;
 	
 	public Portfolio(int port_id, double cash_amt) {

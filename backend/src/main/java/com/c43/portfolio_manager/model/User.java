@@ -3,8 +3,7 @@ import jakarta.validation.constraints.*;
 
 public class User {
 	
-	@NotBlank(message = "User ID cannot be empty")
-	@Pattern(regexp = "^[0-9]+$", message = "User ID can only contain numbers")
+	@Min(value = 0, message = "User ID must be positive")
 	public int user_id;
 	
 	@NotBlank(message = "Username cannot be empty")

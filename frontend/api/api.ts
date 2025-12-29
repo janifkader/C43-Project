@@ -174,7 +174,7 @@ export function unsendFriendRequest(request_id: number,) {
 }
 
 export function logStock(open: number, high: number, low: number, close: number, volume: number, symbol: string) {
-    return send("POST", `/stock/?open=${open}&high=${high}&low=${low}&close=${close}&volume=${volume}&symbol=${symbol}`);
+    return send("POST", `/stock/`, {open, high, low, close, volume, symbol});
 }
 
 export function getHistory(symbol: string, start_date: string, end_date: string) {

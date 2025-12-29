@@ -10,6 +10,11 @@ import com.c43.portfolio_manager.model.SharedStockList;
 import com.c43.portfolio_manager.model.Stock;
 import com.c43.portfolio_manager.service.StockListService;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 @RestController
 @RequestMapping("/stocklist")
 public class StockListEndpoint {
@@ -20,7 +25,7 @@ public class StockListEndpoint {
 	}
 	
 	@PostMapping("/")
-	public int create(@CookieValue(value = "user_id", defaultValue = "-1") int user_id, @RequestBody StockList stocklist) {
+	public int create(@CookieValue(value = "user_id", defaultValue = "-1") int user_id, @Valid @RequestBody StockList stocklist) {
 		return service.createStockList(user_id, stocklist.visibility);
 	}
 	
@@ -30,17 +35,35 @@ public class StockListEndpoint {
 	}
 	
 	@PutMapping("/")
-	public int update(@RequestParam int sl_id, @RequestParam String visibility) {
+	public int update(
+			@RequestParam 
+			
+			int sl_id, 
+			@RequestParam 
+			@Pattern(regexp = "private|public", message = "Visibility must be either private or public")
+			String visibility) {
 		return service.updateVisibility(sl_id, visibility);
 	}
 	
 	@PostMapping("/shared/")
-	public int share(@RequestParam int sl_id, @RequestParam int user_id) {
+	public int share(
+			@RequestParam 
+			@Min(value = 1, message = "Stock List ID must be positive")
+			int sl_id, 
+			@RequestParam 
+			@Min(value = 1, message = "User ID must be positive")
+			int user_id) {
 		return service.share(sl_id, user_id);
 	}
 	
 	@DeleteMapping("/shared/")
-	public int unshare(@RequestParam int sl_id, @RequestParam int user_id) {
+	public int unshare(
+			@RequestParam 
+			@Min(value = 1, message = "Stock List ID must be positive")
+			int sl_id, 
+			@RequestParam 
+			@Min(value = 1, message = "User ID must be positive")
+			int user_id) {
 		return service.unshare(sl_id, user_id);
 	}
 	
@@ -50,32 +73,39 @@ public class StockListEndpoint {
 	}
 	
 	@GetMapping("/sl/")
-	public StockList getOne(@RequestParam int sl_id) {
+	public StockList getOne(@RequestParam @Min(value = 1, message = "Stock List ID must be positive") int sl_id) {
 		return service.getStockList(sl_id);
 	}
 	
 	@PostMapping("/contains/")
-	public int insertStock(@RequestBody Stock stock) {
+	public int insertStock(@Valid @RequestBody Stock stock) {
 		return service.insertStock(stock.id, stock.symbol, stock.num_of_shares);
 	}
 	
 	@DeleteMapping("/contains/")
-	public int deleteStock(@RequestParam int sl_id, @RequestParam String symbol ) {
+	public int deleteStock(
+			@RequestParam 
+			@Min(value = 1, message = "Stock List ID must be positive")
+			int sl_id, 
+			@RequestParam 
+			@NotBlank(message = "Symbol cannot be empty")
+		    @Pattern(regexp = "^[A-Z]{1,5}$", message = "Symbol must be 1-5 uppercase letters")
+			String symbol ) {
 		return service.deleteStock(sl_id, symbol);
 	}
 	
 	@GetMapping("/contains/")
-	public List<Stock> getStocks(@RequestParam int sl_id) {
+	public List<Stock> getStocks(@RequestParam @Min(value = 1, message = "Stock List ID must be positive") int sl_id) {
 		return service.getStockListStocks(sl_id);
 	}
 	
 	@DeleteMapping("/")
-	public int delete(@RequestParam int sl_id) {
+	public int delete(@RequestParam @Min(value = 1, message = "Stock List ID must be positive") int sl_id) {
 		return service.deleteStockList(sl_id);
 	}
 	
 	@GetMapping("/shared/{sl_id}/")
-	public List<User> getSharedWith(@PathVariable int sl_id) {
+	public List<User> getSharedWith(@PathVariable @Min(value = 1, message = "Stock List ID must be positive") int sl_id) {
 		return service.getShared(sl_id);
 	}
 }
